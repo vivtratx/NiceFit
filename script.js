@@ -1,7 +1,28 @@
-// A simple script to change the text of the paragraph after a delay
-const paragraph = document.querySelector('p');
+const app = document.getElementById("app");
 
-setTimeout(() => {
-    paragraph.textContent = 'JS is loaded!';
-    paragraph.style.color = 'green';
-}, 2000); // Changes text after 2 seconds
+function router() {
+  const page = window.location.hash.slice(1) || "home";
+
+  switch (page) {
+    case "home":
+      app.innerHTML = renderHome();
+      break;
+    case "products":
+      app.innerHTML = renderProducts();
+      break;
+    case "cart":
+      app.innerHTML = renderCart();
+      break;
+    case "auth":
+      app.innerHTML = renderAuth();
+      break;
+    case "admin":
+      app.innerHTML = renderAdmin();
+      break;
+    default:
+      app.innerHTML = renderHome();
+  }
+}
+
+window.addEventListener("hashchange", router);
+window.addEventListener("load", router);
