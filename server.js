@@ -20,7 +20,8 @@ initializePassport(
 // storing users in an array for testing purposes
 const users = []
 
-app.set('view-engine', 'ejs')
+app.set('view engine', 'ejs')
+app.use(express.static("public"))
 app.use(express.urlencoded({ extended: false}))
 app.use(flash())
 app.use(session({
