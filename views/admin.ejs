@@ -1,0 +1,25 @@
+<%- include('header') %>
+<h2>Admin</h2>
+<% if (orders.length === 0) { %>
+  <p>No orders.</p>
+<% } else { %>
+  <table>
+    <tr>
+      <th>Order ID</th>
+      <th>Customer</th>
+      <th>Date</th>
+      <th>Status</th>
+      <th>Total</th>
+    </tr>
+    <% orders.forEach(o => { %>
+    <tr>
+      <td>#<%= o.orderID %></td>
+      <td><%= o.firstName %> <%= o.lastName %></td>
+      <td><%= new Date(o.orderDate).toLocaleDateString() %></td>
+      <td><%= o.status %></td>
+      <td>$<%= o.total %></td>
+    </tr>
+    <% }) %>
+  </table>
+<% } %>
+<%- include('footer') %>

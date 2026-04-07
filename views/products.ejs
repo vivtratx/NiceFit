@@ -1,0 +1,35 @@
+<%- include('header') %>
+<h2>Products</h2>
+<% if (products.length === 0) { %>
+  <p>No products.</p>
+<% } else { %>
+  <table>
+    <tr>
+      <th>Product</th>
+      <th>Category</th>
+      <th>Color</th>
+      <th>Size</th>
+      <th>Price</th>
+      <th>Stock</th>
+      <th>Action</th>
+    </tr>
+    <% products.forEach(p => { %>
+    <tr>
+      <td><%= p.product %></td>
+      <td><%= p.category %></td>
+      <td><%= p.color %></td>
+      <td><%= p.size %></td>
+      <td>$<%= p.price %></td>
+      <td><%= p.quantity %></td>
+      <td>
+        <form action="/cart/add" method="POST" style="display:inline;">
+          <input type="hidden" name="productId" value="<%= p.ProductID %>">
+          <input type="number" name="quantity" min="1" max="<%= p.quantity %>" value="1" style="width:50px;">
+          <button type="submit">Add</button>
+        </form>
+      </td>
+    </tr>
+    <% }) %>
+  </table>
+<% } %>
+<%- include('footer') %>

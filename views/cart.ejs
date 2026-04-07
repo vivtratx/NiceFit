@@ -1,0 +1,34 @@
+<%- include('header') %>
+<h2>Cart</h2>
+<% if (cartItems.length === 0) { %>
+  <p>Empty. <a href="/products">Shop</a></p>
+<% } else { %>
+  <table>
+    <tr>
+      <th>Product</th>
+      <th>Color</th>
+      <th>Size</th>
+      <th>Price</th>
+      <th>Qty</th>
+      <th>Total</th>
+      <th></th>
+    </tr>
+    <% cartItems.forEach(item => { %>
+    <tr>
+      <td><%= item.product %></td>
+      <td><%= item.color %></td>
+      <td><%= item.size %></td>
+      <td>$<%= item.price %></td>
+      <td><%= item.quantity %></td>
+      <td>$<%= item.itemTotal.toFixed(2) %></td>
+      <td>
+        <form action="/cart/remove/<%= item.cartID %>" method="POST" style="display:inline;">
+          <button type="submit">Remove</button>
+        </form>
+      </td>
+    </tr>
+    <% }) %>
+  </table>
+  <h3>Total: $<%= total.toFixed(2) %></h3>
+<% } %>
+<%- include('footer') %>
