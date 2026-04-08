@@ -83,7 +83,7 @@ app.get("/cart", checkAuthenticated, async (req, res) => {
 
     const total = cartItems.reduce((sum, item) => sum + Number(item.itemTotal), 0);
 
-    res.render("cart.ejs", {
+    res.render("cart", {
       name: req.user.firstName,
       user: req.user,
       cartItems,
