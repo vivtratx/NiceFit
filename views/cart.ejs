@@ -1,6 +1,6 @@
 <%- include('header') %>
 
-<div id="app" class="cart-page">
+<div class="cart-page">
   <h1 class="page-title">Shopping Cart</h1>
 
   <% if (typeof error !== 'undefined' && error) { %>
@@ -16,11 +16,9 @@
     </section>
   <% } else { %>
     <section class="cart-layout">
-      <!-- LEFT COLUMN -->
       <div class="cart-items-column">
         <% cartItems.forEach(item => { %>
           <div class="cart-card">
-            <!-- Product image -->
             <div>
               <img
                 src="<%= item.imageURL || '/images/placeholder.jpg' %>"
@@ -29,7 +27,6 @@
               />
             </div>
 
-            <!-- Product info -->
             <div>
               <h3 class="product-name"><%= item.product %></h3>
 
@@ -45,7 +42,6 @@
                 $<%= Number(item.onSale && item.salePrice ? item.salePrice : item.price).toFixed(2) %>
               </p>
 
-              <!-- Quantity display only for now -->
               <div class="quantity-form">
                 <div class="quantity-row">
                   <button type="button" class="qty-btn" disabled>−</button>
@@ -55,20 +51,9 @@
               </div>
             </div>
 
-            <!-- Right side -->
             <div class="item-right">
-              <form
-                action="/cart/remove/<%= item.cartID %>"
-                method="POST"
-                class="remove-form"
-              >
-                <button
-                  type="submit"
-                  class="remove-btn"
-                  aria-label="Remove item"
-                >
-                  🗑
-                </button>
+              <form action="/cart/remove/<%= item.cartID %>" method="POST" class="remove-form">
+                <button type="submit" class="remove-btn" aria-label="Remove item">🗑</button>
               </form>
 
               <p class="item-subtotal">
@@ -79,27 +64,21 @@
         <% }) %>
       </div>
 
-      <!-- RIGHT COLUMN -->
       <aside class="summary-card">
         <h2 class="summary-title">Order Summary</h2>
 
         <div class="discount-section">
           <label for="discountCode">Discount Code</label>
-
           <div class="discount-row">
             <input
               type="text"
               id="discountCode"
-              name="discountCode"
               placeholder="Enter code"
               disabled
             />
             <button type="button" class="apply-btn" disabled>Apply</button>
           </div>
-
-          <p class="discount-message">
-            Discount code support can be connected later.
-          </p>
+          <p class="discount-message">Discount code support can be connected later.</p>
         </div>
 
         <div class="summary-lines">
