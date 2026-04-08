@@ -62,25 +62,26 @@ app.get("/cart", checkAuthenticated, async (req, res) => {
     const userId = req.user.UserID;
     const [cartItems] = await pool.query(
       `
-            SELECT 
-                sc.cartID,
-                sc.ProductID,
-                i.product,
-                i.price,
-                i.salePrice,
-                i.onSale,
-                i.color,
-                i.size,
-                sc.quantity,
-                (CASE WHEN i.onSale THEN i.salePrice ELSE i.price END * sc.quantity) as itemTotal
-            FROM ShopCart sc
-            JOIN Inventory i ON sc.ProductID = i.ProductID
-            WHERE sc.UserID = ?
-        `,
-      [userId],
+        SELECT 
+          sc.cartID,
+          sc.ProductID,
+          i.product,
+          i.price,
+          i.salePrice,
+          i.onSale,
+          i.color,
+          i.size,
+          i.imageURL,
+          sc.quantity,
+          (CASE WHEN i.onSale = 1 AND i.salePrice IS NOT NULL THEN i.salePrice ELSE i.price END * sc.quantity) AS itemTotal
+        FROM ShopCart sc
+        JOIN Inventory i ON sc.ProductID = i.ProductID
+        WHERE sc.UserID = ?
+      `,
+      [userId]
     );
 
-    const total = cartItems.reduce((sum, item) => sum + item.itemTotal, 0);
+    const total = cartItems.reduce((sum, item) => sum + Number(item.itemTotal), 0);
 
     res.render("cart.ejs", {
       name: req.user.firstName,
