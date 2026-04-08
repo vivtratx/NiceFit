@@ -1,34 +1,126 @@
 <%- include('header') %>
-<h2>Cart</h2>
-<% if (cartItems.length === 0) { %>
-  <p>Empty. <a href="/products">Shop</a></p>
-<% } else { %>
-  <table>
-    <tr>
-      <th>Product</th>
-      <th>Color</th>
-      <th>Size</th>
-      <th>Price</th>
-      <th>Qty</th>
-      <th>Total</th>
-      <th></th>
-    </tr>
-    <% cartItems.forEach(item => { %>
-    <tr>
-      <td><%= item.product %></td>
-      <td><%= item.color %></td>
-      <td><%= item.size %></td>
-      <td>$<%= item.price %></td>
-      <td><%= item.quantity %></td>
-      <td>$<%= item.itemTotal.toFixed(2) %></td>
-      <td>
-        <form action="/cart/remove/<%= item.cartID %>" method="POST" style="display:inline;">
-          <button type="submit">Remove</button>
-        </form>
-      </td>
-    </tr>
-    <% }) %>
-  </table>
-  <h3>Total: $<%= total.toFixed(2) %></h3>
-<% } %>
+
+<div id="app" class="cart-page">
+  <h1 class="page-title">Shopping Cart</h1>
+
+  <% if (!cartItems || cartItems.length === 0) { %>
+    <section class="empty-cart">
+      <div class="empty-icon">🛍️</div>
+      <h2 class="empty-title">Your cart is empty</h2>
+      <p class="empty-text">Add some products to get started!</p>
+      <a href="/products" class="primary-btn">Browse Products</a>
+    </section>
+  <% } else { %>
+    <section class="cart-layout">
+      <!-- LEFT COLUMN: CART ITEMS -->
+      <div class="cart-items-column">
+        <% cartItems.forEach(item => { %>
+          <div class="cart-card">
+            <!-- Product image -->
+            <div>
+              <% const imgSrc = item.imageURL || item.image || '/images/placeholder.jpg'; %>
+              <img
+                src="<%= imgSrc %>"
+                alt="<%= item.product %>"
+                class="product-image"
+              />
+            </div>
+
+            <!-- Product info -->
+            <div>
+              <h3 class="product-name"><%= item.product %></h3>
+
+              <% if (item.color) { %>
+                <p class="product-meta">Color: <%= item.color %></p>
+              <% } %>
+
+              <% if (item.size) { %>
+                <p class="product-meta">Size: <%= item.size %></p>
+              <% } %>
+
+              <p class="product-price">$<%= Number(item.price).toFixed(2) %></p>
+
+              <!-- Quantity display only
+                   Keep simple here unless team already has update routes -->
+              <div class="quantity-form">
+                <div class="quantity-row">
+                  <button type="button" class="qty-btn" disabled>−</button>
+                  <span class="qty-value"><%= item.quantity %></span>
+                  <button type="button" class="qty-btn" disabled>+</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right side -->
+            <div class="item-right">
+              <form
+                action="/cart/remove/<%= item.cartID %>"
+                method="POST"
+                class="remove-form"
+              >
+                <button
+                  type="submit"
+                  class="remove-btn"
+                  aria-label="Remove item"
+                >
+                  🗑
+                </button>
+              </form>
+
+              <p class="item-subtotal">
+                Subtotal: $<%= Number(item.itemTotal).toFixed(2) %>
+              </p>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- RIGHT COLUMN: ORDER SUMMARY -->
+      <aside class="summary-card">
+        <h2 class="summary-title">Order Summary</h2>
+
+        <!-- Keep discount UI lightweight until backend route is confirmed -->
+        <div class="discount-section">
+          <label for="discountCode">Discount Code</label>
+
+          <div class="discount-row">
+            <input
+              type="text"
+              id="discountCode"
+              name="discountCode"
+              placeholder="Enter code"
+              disabled
+            />
+            <button type="button" class="apply-btn" disabled>Apply</button>
+          </div>
+
+          <p class="discount-message">
+            Discount code support can be connected at checkout.
+          </p>
+        </div>
+
+        <div class="summary-lines">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>$<%= Number(total).toFixed(2) %></span>
+          </div>
+
+          <div class="summary-row">
+            <span>Tax (8.25%)</span>
+            <span>$<%= (Number(total) * 0.0825).toFixed(2) %></span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <span>$<%= (Number(total) + Number(total) * 0.0825).toFixed(2) %></span>
+          </div>
+        </div>
+
+        <a href="/checkout" class="checkout-btn">Proceed to Checkout</a>
+        <a href="/products" class="secondary-btn">Continue Shopping</a>
+      </aside>
+    </section>
+  <% } %>
+</div>
+
 <%- include('footer') %>
