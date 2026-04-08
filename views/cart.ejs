@@ -3,6 +3,10 @@
 <div id="app" class="cart-page">
   <h1 class="page-title">Shopping Cart</h1>
 
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="error-alert"><%= error %></div>
+  <% } %>
+
   <% if (!cartItems || cartItems.length === 0) { %>
     <section class="empty-cart">
       <div class="empty-icon">🛍️</div>
@@ -12,15 +16,14 @@
     </section>
   <% } else { %>
     <section class="cart-layout">
-      <!-- LEFT COLUMN: CART ITEMS -->
+      <!-- LEFT COLUMN -->
       <div class="cart-items-column">
         <% cartItems.forEach(item => { %>
           <div class="cart-card">
             <!-- Product image -->
             <div>
-              <% const imgSrc = item.imageURL || item.image || '/images/placeholder.jpg'; %>
               <img
-                src="<%= imgSrc %>"
+                src="<%= item.imageURL || '/images/placeholder.jpg' %>"
                 alt="<%= item.product %>"
                 class="product-image"
               />
@@ -38,10 +41,11 @@
                 <p class="product-meta">Size: <%= item.size %></p>
               <% } %>
 
-              <p class="product-price">$<%= Number(item.price).toFixed(2) %></p>
+              <p class="product-price">
+                $<%= Number(item.onSale && item.salePrice ? item.salePrice : item.price).toFixed(2) %>
+              </p>
 
-              <!-- Quantity display only
-                   Keep simple here unless team already has update routes -->
+              <!-- Quantity display only for now -->
               <div class="quantity-form">
                 <div class="quantity-row">
                   <button type="button" class="qty-btn" disabled>−</button>
@@ -75,11 +79,10 @@
         <% }) %>
       </div>
 
-      <!-- RIGHT COLUMN: ORDER SUMMARY -->
+      <!-- RIGHT COLUMN -->
       <aside class="summary-card">
         <h2 class="summary-title">Order Summary</h2>
 
-        <!-- Keep discount UI lightweight until backend route is confirmed -->
         <div class="discount-section">
           <label for="discountCode">Discount Code</label>
 
@@ -95,7 +98,7 @@
           </div>
 
           <p class="discount-message">
-            Discount code support can be connected at checkout.
+            Discount code support can be connected later.
           </p>
         </div>
 
