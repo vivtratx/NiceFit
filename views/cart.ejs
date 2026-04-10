@@ -20,7 +20,8 @@
       <td><%= item.size %></td>
       <td>$<%= item.price %></td>
       <td><%= item.quantity %></td>
-      <td>$<%= item.itemTotal.toFixed(2) %></td>
+      <!-- changing this line to convert it to nummber -->
+      <td>$<%= (Number(item.itemTotal) || 0).toFixed(2) %></td>
       <td>
         <form action="/cart/remove/<%= item.cartID %>" method="POST" style="display:inline;">
           <button type="submit">Remove</button>
@@ -29,6 +30,7 @@
     </tr>
     <% }) %>
   </table>
-  <h3>Total: $<%= total.toFixed(2) %></h3>
+  <!-- changing this line to convert it to number too -->
+  <h3>Total: $<%= (Number(total) || 0).toFixed(2) %></h3>
 <% } %>
 <%- include('footer') %>

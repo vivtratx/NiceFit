@@ -36,25 +36,55 @@ app.get("/", checkAuthenticated, (req, res) => {
   res.render("home.ejs", { name: req.user.firstName, user: req.user });
 });
 
+// changed implementation for sorting 
 app.get("/products", checkAuthenticated, async (req, res) => {
-  try {
-    const [products] = await pool.query(
-      "SELECT ProductID, product, description, category, gender, color, size, price, salePrice, onSale, quantity FROM Inventory WHERE quantity > 0 ORDER BY category, product",
-    );
-    res.render("products.ejs", {
-      name: req.user.firstName,
-      user: req.user,
-      products,
-    });
-  } catch (err) {
-    console.error("Error fetching products:", err);
-    res.render("products.ejs", {
-      name: req.user.firstName,
-      user: req.user,
-      products: [],
-      error: "Unable to load products",
-    });
-  }
+    try {
+        const { search, sortPrice, sortStock } = req.query;
+
+        // only show things in stock
+        let query = "SELECT * FROM Inventory WHERE quantity > 0";
+        let params = [];
+
+        // for searching
+        if (search) {
+            query += " AND (product LIKE ? OR description LIKE ?)";
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm);
+        }
+
+        let orderClauses = [];
+        
+        // sorting by availability
+        if (sortStock === 'high') {
+            orderClauses.push("quantity DESC");
+        } else if (sortStock === 'low') {
+            orderClauses.push("quantity ASC");
+        }
+
+        // sorting by price
+        if (sortPrice === 'ASC' || sortPrice === 'DESC') {
+            orderClauses.push(`price ${sortPrice}`);
+        }
+
+        if (orderClauses.length > 0) {
+            query += " ORDER BY " + orderClauses.join(", ");
+        } else {
+            query += " ORDER BY product ASC";
+        }
+
+        const [products] = await pool.query(query, params);
+
+        res.render("products.ejs", {
+            name: req.user.firstName,
+            user: req.user,
+            products,
+            query: req.query
+        });
+
+    } catch (err) {
+        console.error("Error fetching products:", err);
+        res.status(500).send("Database Error");
+    }
 });
 
 app.get("/cart", checkAuthenticated, async (req, res) => {
@@ -80,7 +110,8 @@ app.get("/cart", checkAuthenticated, async (req, res) => {
       [userId],
     );
 
-    const total = cartItems.reduce((sum, item) => sum + item.itemTotal, 0);
+    // converting item.itemTotal into a number 
+    const total = cartItems.reduce((sum, item) => sum + (Number(item.itemTotal) || 0), 0);
 
     res.render("cart.ejs", {
       name: req.user.firstName,

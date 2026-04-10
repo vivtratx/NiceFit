@@ -3,6 +3,40 @@
 <% if (products.length === 0) { %>
   <p>No products.</p>
 <% } else { %>
+  <!-- adding searching and sorting by price and availability -->
+  <section class="filters" style="margin-bottom: 20px; padding: 7px; background: #f4f4f4; border-radius: 8px;">
+  <form action="/products" method="GET" style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+    
+    <div style="display: flex; align-items: center; gap: 10px; flex: grow 1;">
+      <label for="search">Search:</label>
+      <input type="text" name="search" id="search" placeholder="Item name or description..." value="<%= typeof query !== 'undefined' ? query.search : '' %>">
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <label for="sortPrice">Price:</label>
+      <select name="sortPrice" id="sortPrice">
+        <option value="">Default</option>
+        <option value="ASC">Low to High</option>
+        <option value="DESC">High to Low</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="sortStock">Availability:</label>
+      <select name="sortStock" id="sortStock">
+        <option value="">Default</option>
+        <option value="DESC">In Stock First</option>
+        <option value="ASC">Out of Stock First</option>
+      </select>
+    </div>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 15px">
+     <button type="submit">Apply</button>
+     <a href="/products">Reset</a>      
+    </div>
+
+  </form>
+</section>
   <table>
     <tr>
       <th>Product</th>
