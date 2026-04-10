@@ -1,36 +1,108 @@
 <%- include('header') %>
-<h2>Cart</h2>
-<% if (cartItems.length === 0) { %>
-  <p>Empty. <a href="/products">Shop</a></p>
-<% } else { %>
-  <table>
-    <tr>
-      <th>Product</th>
-      <th>Color</th>
-      <th>Size</th>
-      <th>Price</th>
-      <th>Qty</th>
-      <th>Total</th>
-      <th></th>
-    </tr>
-    <% cartItems.forEach(item => { %>
-    <tr>
-      <td><%= item.product %></td>
-      <td><%= item.color %></td>
-      <td><%= item.size %></td>
-      <td>$<%= item.price %></td>
-      <td><%= item.quantity %></td>
-      <!-- changing this line to convert it to nummber -->
-      <td>$<%= (Number(item.itemTotal) || 0).toFixed(2) %></td>
-      <td>
-        <form action="/cart/remove/<%= item.cartID %>" method="POST" style="display:inline;">
-          <button type="submit">Remove</button>
-        </form>
-      </td>
-    </tr>
-    <% }) %>
-  </table>
-  <!-- changing this line to convert it to number too -->
-  <h3>Total: $<%= (Number(total) || 0).toFixed(2) %></h3>
-<% } %>
+
+<div class="cart-page">
+  <h1 class="page-title">Shopping Cart</h1>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="error-alert"><%= error %></div>
+  <% } %>
+
+  <% if (!cartItems || cartItems.length === 0) { %>
+    <section class="empty-cart">
+      <div class="empty-icon">🛍️</div>
+      <h2 class="empty-title">Your cart is empty</h2>
+      <p class="empty-text">Add some products to get started!</p>
+      <a href="/products" class="primary-btn">Browse Products</a>
+    </section>
+  <% } else { %>
+    <section class="cart-layout">
+      <div class="cart-items-column">
+        <% cartItems.forEach(item => { %>
+          <div class="cart-card">
+            <div>
+              <img
+                src="<%= item.imageURL || '/images/placeholder.jpg' %>"
+                alt="<%= item.product %>"
+                class="product-image"
+              />
+            </div>
+
+            <div>
+              <h3 class="product-name"><%= item.product %></h3>
+
+              <% if (item.color) { %>
+                <p class="product-meta">Color: <%= item.color %></p>
+              <% } %>
+
+              <% if (item.size) { %>
+                <p class="product-meta">Size: <%= item.size %></p>
+              <% } %>
+
+              <p class="product-price">
+                $<%= Number(item.onSale && item.salePrice ? item.salePrice : item.price).toFixed(2) %>
+              </p>
+
+              <div class="quantity-form">
+                <div class="quantity-row">
+                  <button type="button" class="qty-btn" disabled>−</button>
+                  <span class="qty-value"><%= item.quantity %></span>
+                  <button type="button" class="qty-btn" disabled>+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="item-right">
+              <form action="/cart/remove/<%= item.cartID %>" method="POST" class="remove-form">
+                <button type="submit" class="remove-btn" aria-label="Remove item">🗑</button>
+              </form>
+
+              <p class="item-subtotal">
+                Subtotal: $<%= Number(item.itemTotal).toFixed(2) %>
+              </p>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <aside class="summary-card">
+        <h2 class="summary-title">Order Summary</h2>
+
+        <div class="discount-section">
+          <label for="discountCode">Discount Code</label>
+          <div class="discount-row">
+            <input
+              type="text"
+              id="discountCode"
+              placeholder="Enter code"
+              disabled
+            />
+            <button type="button" class="apply-btn" disabled>Apply</button>
+          </div>
+          <p class="discount-message">Discount code support can be connected later.</p>
+        </div>
+
+        <div class="summary-lines">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>$<%= Number(total).toFixed(2) %></span>
+          </div>
+
+          <div class="summary-row">
+            <span>Tax (8.25%)</span>
+            <span>$<%= (Number(total) * 0.0825).toFixed(2) %></span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <span>$<%= (Number(total) + Number(total) * 0.0825).toFixed(2) %></span>
+          </div>
+        </div>
+
+        <a href="/checkout" class="checkout-btn">Proceed to Checkout</a>
+        <a href="/products" class="secondary-btn">Continue Shopping</a>
+      </aside>
+    </section>
+  <% } %>
+</div>
+
 <%- include('footer') %>
