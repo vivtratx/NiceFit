@@ -652,10 +652,11 @@ ORDER BY category, product, gender, size;
 -- 
 -- Users  (1 admin + 2 sample customers)
 -- 
-INSERT INTO Users (firstName, lastName, userName, password, email, role) VALUES
-  ('Vivian',  'User',  'admin',  '$2b$12$placeholder_hash_admin',  'admin@store.com',    'admin'),
-  ('Andrea',   'G', 'AG', '$2b$12$placeholder_hash_jane',   'andrea@example.com',   'customer'),
-  ('Jacob', 'Lopez', 'JLO', '$2b$12$placeholder_hash_carlos', 'jacob@example.com', 'customer');
+INSERT INTO Users (firstName, lastName, userName, password, email, phone, address, state, zipCode, dob,  role) VALUES
+  ('Vivian',  'User',  'admin',  '$2b$12$placeholder_hash_admin',  'admin@store.com', '757-876-5432', '8765 HWY 151', 'TX', '78245', '2004-01-01', 'admin'),
+  ('Andrea',   'G', 'AG', '$2b$12$placeholder_hash_jane',   'andrea@example.com', '210-876-5432', '8765 HWY 151', 'TX', '78245', '2003-01-01', 'customer'),
+  ('Jacob', 'Lopez', 'JLO', '$2b$12$placeholder_hash_carlos', 'jacob@example.com', '726-876-5432', '8765 HWY 151', 'TX', '78245', '2002-01-01', 'customer');
+
 
 
 -- 
