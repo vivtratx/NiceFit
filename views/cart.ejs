@@ -39,14 +39,14 @@
               <% } %>
 
               <p class="product-price">
-                $<%= Number(item.onSale && item.salePrice ? item.salePrice : item.price).toFixed(2) %>
+                $<%= (Number(item.onSale && item.salePrice ? item.salePrice : item.price)*item.quantity).toFixed(2) %>
               </p>
 
               <div class="quantity-form">
                 <div class="quantity-row">
-                  <button type="button" class="qty-btn" disabled>−</button>
+                  <button type="button" class="qty-btn" onclick="updateQty('<%= item.cartID %>', -1)" <%= item.quantity <= 1 ? 'disabled' : '' %>>-</button>
                   <span class="qty-value"><%= item.quantity %></span>
-                  <button type="button" class="qty-btn" disabled>+</button>
+                  <button type="button" class="qty-btn" onclick="updateQty('<%= item.cartID %>', 1)">+</button>
                 </div>
               </div>
             </div>
@@ -104,5 +104,25 @@
     </section>
   <% } %>
 </div>
+
+
+<!-- + - functionality -->
+<script>
+  function updateQty(id, change) {
+    fetch('/cart/update-qty', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cartID: id, amount: change })
+    })
+    .then(res => {
+      if (res.ok) {
+        location.reload();
+      } else {
+        console.error("Server error updating quantity");
+      }
+    })
+    .catch(err => console.error("Network error:", err));
+  }
+</script>
 
 <%- include('footer') %>
