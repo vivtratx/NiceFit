@@ -30,6 +30,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride("_method"));
+app.use(express.json());
 
 // Setting up the routes
 app.get("/", checkAuthenticated, (req, res) => {
@@ -161,6 +162,23 @@ app.post("/cart/add", checkAuthenticated, async (req, res) => {
     console.error("Error adding to cart:", err);
     res.redirect("/cart");
   }
+});
+
+app.post('/cart/update-qty', async (req, res) => {
+    const { cartID, amount } = req.body;
+    
+    console.log(`Updating Cart ID ${cartID} by ${amount}`);
+
+    try {
+        const sql = "UPDATE ShopCart SET quantity = quantity + ? WHERE cartID = ?";
+        
+        await pool.query(sql, [amount, cartID]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ success: false, error: "Database update failed" });
+    }
 });
 
 app.post("/cart/remove/:cartId", checkAuthenticated, async (req, res) => {
