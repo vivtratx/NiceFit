@@ -716,8 +716,8 @@ VALUES
 ('Essential Crew-Neck Tee','100% cotton, relaxed fit, ribbed collar',       'Tops', 'Men', 'Black',      'L',  12.99,110, 0, NULL,  '/images/m-tee-black.jpg'),
 ('Essential Crew-Neck Tee','100% cotton, relaxed fit, ribbed collar',       'Tops', 'Men', 'White',      'M',  12.99,115, 0, NULL,  '/images/m-tee-white.jpg'),
 ('Essential Crew-Neck Tee','100% cotton, relaxed fit, ribbed collar',       'Tops', 'Men', 'White',      'L',  12.99,105, 0, NULL,  '/images/m-tee-white.jpg'),
-('Graphic Print Tee',      'Oversized, heavyweight cotton, front graphic',  'Tops', 'Men', 'Black',      'M',  19.99, 70, 0, NULL,  '/images/m-graphic-black.jpg'),
-('Graphic Print Tee',      'Oversized, heavyweight cotton, front graphic',  'Tops', 'Men', 'Black',      'L',  19.99, 65, 0, NULL,  '/images/m-graphic-black.jpg'),
+('Graphic Print Tee',      'Oversized, heavyweight cotton, front graphic',  'Tops', 'Men', 'Black',      'M',  19.99, 70, 0, NULL,  '/images/m-graphic-black1.jpg'),
+('Graphic Print Tee',      'Oversized, heavyweight cotton, front graphic',  'Tops', 'Men', 'Black',      'L',  19.99, 65, 0, NULL,  '/images/m-graphic-black2.jpg'),
 ('Linen Blend Shirt',      'Regular fit, Cuban collar, linen blend',        'Tops', 'Men', 'Ecru',       'S',  39.99, 40, 1, 27.99, '/images/m-linen-ecru.jpg'),
 ('Linen Blend Shirt',      'Regular fit, Cuban collar, linen blend',        'Tops', 'Men', 'Dusty Blue', 'L',  39.99, 35, 1, 27.99, '/images/m-linen-blue.jpg'),
 
