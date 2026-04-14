@@ -31,6 +31,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride("_method"));
 app.use(express.json());
+app.use("/images", express.static("images"));
 
 // Setting up the routes
 app.get("/", checkAuthenticated, (req, res) => {
