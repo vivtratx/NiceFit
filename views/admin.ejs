@@ -1,25 +1,83 @@
 <%- include('header') %>
-<h2>Admin</h2>
-<% if (orders.length === 0) { %>
-  <p>No orders.</p>
+
+<% if (user && user.role === 'admin') { %>
+  <h2>Admin</h2>
+
+  <!-- Orders Table -->
+  <h3>Orders</h3>
+  <% if (orders.length === 0) { %>
+    <p>No orders.</p>
+  <% } else { %>
+    <table>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Total</th>
+      </tr>
+      <% orders.forEach(o => { %>
+      <tr>
+        <td>#<%= o.orderID %></td>
+        <td><%= o.firstName %> <%= o.lastName %></td>
+        <td><%= new Date(o.orderDate).toLocaleDateString() %></td>
+        <td><%= o.status %></td>
+        <td>$<%= o.orderTotal %></td>
+      </tr>
+      <% }) %>
+    </table>
+  <% } %>
+
+  <!-- Discount Codes -->
+  <h3>Discount Codes</h3>
+
+  <!-- Create Form -->
+  <form action="/admin/discounts" method="POST">
+    <input type="text"   name="code"          placeholder="Code (e.g. SAVE10)" required />
+    <select name="discountType">
+      <option value="percent">Percent</option>
+      <option value="flat">Flat</option>
+    </select>
+    <input type="number" name="discountValue"  placeholder="Value"        step="0.01" required />
+    <input type="number" name="usageLimit"     placeholder="Usage limit (optional)" />
+    <input type="date"   name="expiresAt"      placeholder="Expiry (optional)" />
+    <button type="submit">Create Code</button>
+  </form>
+
+  <!-- Existing Codes Table -->
+  <% if (discounts.length === 0) { %>
+    <p>No discount codes.</p>
+  <% } else { %>
+    <table>
+      <tr>
+        <th>Code</th>
+        <th>Type</th>
+        <th>Value</th>
+        <th>Usage</th>
+        <th>Expires</th>
+        <th>Active</th>
+        <th>Action</th>
+      </tr>
+      <% discounts.forEach(d => { %>
+      <tr>
+        <td><%= d.code %></td>
+        <td><%= d.discountType %></td>
+        <td><%= d.discountType === 'percent' ? d.discountValue + '%' : '$' + d.discountValue %></td>
+        <td><%= d.usageCount %><%= d.usageLimit ? ' / ' + d.usageLimit : '' %></td>
+        <td><%= d.expiresAt ? new Date(d.expiresAt).toLocaleDateString() : 'Never' %></td>
+        <td><%= d.isActive ? 'Yes' : 'No' %></td>
+        <td>
+          <form action="/admin/discounts/<%= d.discountID %>?_method=DELETE" method="POST">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </table>
+  <% } %>
+
 <% } else { %>
-  <table>
-    <tr>
-      <th>Order ID</th>
-      <th>Customer</th>
-      <th>Date</th>
-      <th>Status</th>
-      <th>Total</th>
-    </tr>
-    <% orders.forEach(o => { %>
-    <tr>
-      <td>#<%= o.orderID %></td>
-      <td><%= o.firstName %> <%= o.lastName %></td>
-      <td><%= new Date(o.orderDate).toLocaleDateString() %></td>
-      <td><%= o.status %></td>
-      <td>$<%= o.total %></td>
-    </tr>
-    <% }) %>
-  </table>
+  <p>Access denied.</p>
 <% } %>
+
 <%- include('footer') %>
