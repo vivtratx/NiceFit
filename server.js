@@ -34,8 +34,38 @@ app.use(express.json());
 app.use("/images", express.static("images"));
 
 // Setting up the routes
-app.get("/", checkAuthenticated, (req, res) => {
-  res.render("home.ejs", { name: req.user.firstName, user: req.user });
+app.get("/", checkAuthenticated, async (req, res) => {
+  try {
+    const [categories] = await pool.query(`
+      SELECT category, COUNT(*) AS itemCount
+      FROM Inventory
+      GROUP BY category
+      ORDER BY category
+    `);
+
+    const [items] = await pool.query(`
+      SELECT *
+      FROM Inventory
+      WHERE quantity > 0
+      ORDER BY onSale DESC, ProductID DESC
+      LIMIT 12
+    `);
+
+    res.render("home.ejs", {
+      name: req.user.firstName,
+      user: req.user,
+      categories,
+      items
+    });
+  } catch (err) {
+    console.error("Error loading home page:", err);
+    res.render("home.ejs", {
+      name: req.user.firstName,
+      user: req.user,
+      categories: [],
+      items: []
+    });
+  }
 });
 
 // changed implementation for sorting 
