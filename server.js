@@ -55,7 +55,7 @@ app.get("/", checkAuthenticated, async (req, res) => {
       name: req.user.firstName,
       user: req.user,
       categories,
-      items
+      items,
     });
   } catch (err) {
     console.error("Error loading home page:", err);
@@ -63,7 +63,7 @@ app.get("/", checkAuthenticated, async (req, res) => {
       name: req.user.firstName,
       user: req.user,
       categories: [],
-      items: []
+      items: [],
     });
   }
 });
@@ -232,11 +232,16 @@ app.get("/admin", checkAuthenticated, checkAdmin, async (req, res) => {
     );
     console.log("Discounts fetched:", discounts);
 
+    const [users] = await pool.query(
+      "SELECT UserID, firstName, lastName, email, role FROM Users ORDER BY UserID ASC",
+    );
+
     res.render("admin.ejs", {
       name: req.user.firstName,
       user: req.user,
       orders,
       discounts,
+      users,
     });
   } catch (err) {
     console.error("Error fetching admin data:", err);
@@ -245,6 +250,7 @@ app.get("/admin", checkAuthenticated, checkAdmin, async (req, res) => {
       user: req.user,
       orders: [],
       discounts: [],
+      users: [],
       error: "Unable to load data",
     });
   }
@@ -324,6 +330,58 @@ app.delete(
       res.redirect("/admin");
     } catch (err) {
       console.error("Error deleting discount:", err);
+      res.redirect("/admin");
+    }
+  },
+);
+
+// update a user's role
+app.post(
+  "/admin/users/:id/role",
+  checkAuthenticated,
+  checkAdmin,
+  async (req, res) => {
+    try {
+      const { role } = req.body;
+
+      // prevent admin from demoting themselves
+      if (Number(req.params.id) === req.user.UserID) {
+        return res.redirect("/admin");
+      }
+
+      if (!["admin", "customer"].includes(role)) {
+        return res.redirect("/admin");
+      }
+
+      await pool.query("UPDATE Users SET role = ? WHERE UserID = ?", [
+        role,
+        req.params.id,
+      ]);
+
+      res.redirect("/admin");
+    } catch (err) {
+      console.error("Error updating user role:", err);
+      res.redirect("/admin");
+    }
+  },
+);
+
+// delete a user
+app.delete(
+  "/admin/users/:id",
+  checkAuthenticated,
+  checkAdmin,
+  async (req, res) => {
+    try {
+      // prevent admin from deleting themselves
+      if (Number(req.params.id) === req.user.UserID) {
+        return res.redirect("/admin");
+      }
+
+      await pool.query("DELETE FROM Users WHERE UserID = ?", [req.params.id]);
+      res.redirect("/admin");
+    } catch (err) {
+      console.error("Error deleting user:", err);
       res.redirect("/admin");
     }
   },

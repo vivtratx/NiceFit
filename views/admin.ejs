@@ -31,20 +31,18 @@
   <!-- Discount Codes -->
   <h3>Discount Codes</h3>
 
-  <!-- Create Form -->
   <form action="/admin/discounts" method="POST">
     <input type="text"   name="code"          placeholder="Code (e.g. SAVE10)" required />
     <select name="discountType">
       <option value="percent">Percent</option>
       <option value="flat">Flat</option>
     </select>
-    <input type="number" name="discountValue"  placeholder="Value"        step="0.01" required />
+    <input type="number" name="discountValue"  placeholder="Value" step="0.01" required />
     <input type="number" name="usageLimit"     placeholder="Usage limit (optional)" />
     <input type="date"   name="expiresAt"      placeholder="Expiry (optional)" />
     <button type="submit">Create Code</button>
   </form>
 
-  <!-- Existing Codes Table -->
   <% if (discounts.length === 0) { %>
     <p>No discount codes.</p>
   <% } else { %>
@@ -70,6 +68,51 @@
           <form action="/admin/discounts/<%= d.discountID %>?_method=DELETE" method="POST">
             <button type="submit">Delete</button>
           </form>
+        </td>
+      </tr>
+      <% }) %>
+    </table>
+  <% } %>
+
+  <!-- Users -->
+  <h3>Users</h3>
+  <% if (users.length === 0) { %>
+    <p>No users found.</p>
+  <% } else { %>
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Change Role</th>
+        <th>Delete</th>
+      </tr>
+      <% users.forEach(u => { %>
+      <tr>
+        <td><%= u.UserID %></td>
+        <td><%= u.firstName %> <%= u.lastName %></td>
+        <td><%= u.email %></td>
+        <td><%= u.role %></td>
+        <td>
+          <% if (u.UserID !== user.UserID) { %>
+            <form action="/admin/users/<%= u.UserID %>/role" method="POST">
+              <select name="role">
+                <option value="customer" <%= u.role === 'customer' ? 'selected' : '' %>>Customer</option>
+                <option value="admin"    <%= u.role === 'admin'    ? 'selected' : '' %>>Admin</option>
+              </select>
+              <button type="submit">Update</button>
+            </form>
+          <% } else { %>
+            <em>(you)</em>
+          <% } %>
+        </td>
+        <td>
+          <% if (u.UserID !== user.UserID) { %>
+            <form action="/admin/users/<%= u.UserID %>?_method=DELETE" method="POST">
+              <button type="submit">Delete</button>
+            </form>
+          <% } %>
         </td>
       </tr>
       <% }) %>
