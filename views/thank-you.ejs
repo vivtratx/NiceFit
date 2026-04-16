@@ -1,0 +1,28 @@
+<%- include('header') %>
+
+<div class="thankyou-page">
+  <div class="thankyou-card">
+    
+    <div class="checkmark">✅</div>
+
+    <h1>Thank You for Your Order!</h1>
+
+    <p class="message">
+      Your order has been placed successfully.
+    </p>
+
+    <% if (orderID) { %>
+      <p class="order-id">
+        Order ID: <strong>#<%= orderID %></strong>
+      </p>
+    <% } %>
+
+    <div class="thankyou-actions">
+      <a href="/products" class="primary-btn">Continue Shopping</a>
+      <a href="/orders" class="secondary-btn">View My Orders</a>
+    </div>
+
+  </div>
+</div>
+
+<%- include('footer') %>

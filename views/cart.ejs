@@ -39,15 +39,33 @@
               <% } %>
 
               <p class="product-price">
-                $<%= (Number(item.onSale && item.salePrice ? item.salePrice : item.price)*item.quantity).toFixed(2) %>
+                $<%= Number(item.onSale && item.salePrice ? item.salePrice : item.price).toFixed(2) %>
               </p>
 
               <div class="quantity-form">
                 <div class="quantity-row">
-                  <button type="button" class="qty-btn" onclick="updateQty('<%= item.cartID %>', -1)" <%= item.quantity <= 1 ? 'disabled' : '' %>>-</button>
-                  <span class="qty-value"><%= item.quantity %></span>
-                  <button type="button" class="qty-btn" onclick="updateQty('<%= item.cartID %>', 1)">+</button>
-                </div>
+                <form action="/cart/update-qty" method="POST">
+                  <input type="hidden" name="cartID" value="<%= item.cartID %>">
+                  <input type="hidden" name="amount" value="-1">
+                  <button 
+                    type="submit" 
+                    class="qty-btn"
+                    <%= item.quantity <= 1 ? 'disabled' : '' %>
+                  >
+                    −
+                  </button>
+                </form>
+
+                <span class="qty-value"><%= item.quantity %></span>
+
+                <!-- Increase -->
+                <form action="/cart/update-qty" method="POST">
+                  <input type="hidden" name="cartID" value="<%= item.cartID %>">
+                  <input type="hidden" name="amount" value="1">
+                  <button type="submit" class="qty-btn">+</button>
+                </form>
+
+              </div>
               </div>
             </div>
 
@@ -67,68 +85,44 @@
       <aside class="summary-card">
         <h2 class="summary-title">Order Summary</h2>
 
-        <div class="discount-section">
-          <label for="discountCode">Discount Code</label>
-          <div class="discount-row">
-            <input
-              type="text"
-              id="discountCode"
-              placeholder="Enter code"
-              value="<%= discount ? discount.code : '' %>"
-              <%= discount ? 'disabled' : '' %>
-            />
-            <button type="button" class="apply-btn" id="applyBtn" <%= discount ? 'disabled' : '' %>>
-              <%= discount ? 'Applied' : 'Apply' %>
-            </button>
-          </div>
-          <p class="discount-message" id="discountMessage">
-            <% if (discount) { %>
-              ✅ <%= discount.code %> applied —
-              <% if (discount.discountType === 'percent') { %>
-                <%= discount.discountValue %>% off
-              <% } else { %>
-                $<%= discount.discountValue.toFixed(2) %> off
-              <% } %>
-            <% } %>
-          </p>
-        </div>
+      <div class="discount-section">
+        <label for="discountCode">Discount Code</label>
+        <form action="/cart/apply-discount" method="POST" class="discount-row">
+          <input
+            type="text"
+            id="discountCode"
+            name="discountCode"
+            placeholder="Enter code"
+            required
+          />
+          <button type="submit" class="apply-btn">Apply</button>
+        </form>
 
-        <%
-          const subtotal = Number(total);
-          let discountAmount = 0;
-          if (discount) {
-            if (discount.discountType === 'percent') {
-              discountAmount = subtotal * (discount.discountValue / 100);
-            } else {
-              discountAmount = Math.min(discount.discountValue, subtotal);
-            }
-          }
-          const discounted = subtotal - discountAmount;
-          const tax = discounted * 0.0825;
-          const grandTotal = discounted + tax;
-        %>
-
+        <% if (typeof discountMessage !== 'undefined' && discountMessage) { %>
+          <p class="discount-message"><%= discountMessage %></p>
+        <% } %>
+      </div>
         <div class="summary-lines">
           <div class="summary-row">
             <span>Subtotal</span>
-            <span>$<%= subtotal.toFixed(2) %></span>
+            <span>$<%= Number(total).toFixed(2) %></span>
           </div>
 
-          <% if (discount && discountAmount > 0) { %>
-          <div class="summary-row" style="color: green;">
-            <span>Discount (<%= discount.code %>)</span>
-            <span>-$<%= discountAmount.toFixed(2) %></span>
-          </div>
+          <% if (typeof discountAmount !== 'undefined' && discountAmount > 0) { %>
+            <div class="summary-row">
+              <span>Discount</span>
+              <span>- $<%= Number(discountAmount).toFixed(2) %></span>
+            </div>
           <% } %>
 
           <div class="summary-row">
             <span>Tax (8.25%)</span>
-            <span>$<%= tax.toFixed(2) %></span>
+            <span>$<%= Number(typeof tax !== 'undefined' ? tax : Number(total) * 0.0825).toFixed(2) %></span>
           </div>
 
           <div class="summary-row total-row">
             <span>Total</span>
-            <span>$<%= grandTotal.toFixed(2) %></span>
+            <span>$<%= Number(typeof finalTotal !== 'undefined' ? finalTotal : Number(total) + Number(total) * 0.0825).toFixed(2) %></span>
           </div>
         </div>
 
@@ -138,43 +132,5 @@
     </section>
   <% } %>
 </div>
-
-
-<!-- + - functionality -->
-<script>
-  function updateQty(id, change) {
-    fetch('/cart/update-qty', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cartID: id, amount: change })
-    })
-    .then(res => {
-      if (res.ok) location.reload();
-      else console.error("Server error updating quantity");
-    })
-    .catch(err => console.error("Network error:", err));
-  }
-
-  document.getElementById('applyBtn').addEventListener('click', () => {
-    const code = document.getElementById('discountCode').value.trim();
-    if (!code) return;
-
-    fetch('/cart/apply-discount', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        location.reload();
-      } else {
-        document.getElementById('discountMessage').textContent = data.message;
-        document.getElementById('discountMessage').style.color = 'red';
-      }
-    })
-    .catch(err => console.error("Network error:", err));
-  });
-</script>
 
 <%- include('footer') %>

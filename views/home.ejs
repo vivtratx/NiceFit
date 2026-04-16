@@ -1,4 +1,79 @@
 <%- include('header') %>
-<h2>Home</h2>
-<p>Welcome to NiceFit, <%= name %>!</p>
+
+<div class="home-wrapper">
+
+  <!-- HERO -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Welcome to StyleHub</h1>
+      <p>Discover the latest trends in fashion</p>
+
+      <div class="hero-buttons">
+        <a href="/products" class="btn-dark">Shop Now</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED SALE -->
+  <section class="featured-section">
+    <div class="section-header">
+      <div>
+        <h2>Featured Sale</h2>
+        <p>Don't miss out on these amazing deals!</p>
+      </div>
+
+      <a href="/products" class="view-all-btn">View All Sales</a>
+    </div>
+
+<div class="featured-grid">
+  <% products.forEach(item => { %>
+
+    <a href="/products?search=<%= item.product %>" class="product-card-link">
+      <div class="product-card">
+
+        <div class="product-image-wrap">
+          <img src="<%= item.imageURL %>" alt="<%= item.product %>">
+          <% if (item.onSale) { %>
+            <span class="sale-badge">Sale</span>
+          <% } %>
+        </div>
+
+        <div class="product-info">
+          <h3><%= item.product %></h3>
+          <p><%= item.description %></p>
+
+          <div class="product-bottom">
+            <div class="price-group">
+              <% if (item.onSale) { %>
+                <span class="sale-price">$<%= item.salePrice %></span>
+                <span class="old-price">$<%= item.price %></span>
+              <% } else { %>
+                <span class="sale-price">$<%= item.price %></span>
+              <% } %>
+            </div>
+
+            <span class="stock"><%= item.quantity %> in stock</span>
+          </div>
+        </div>
+
+      </div>
+    </a>
+
+  <% }) %>
+</div>
+  </section>
+
+  <section class="category-section">
+  <h2>Shop by Category</h2>
+  <div class="category-grid">
+    <% categories.forEach(cat => { %>
+      <a href="/products?category=<%= cat.category %>" class="category-card">
+        <h3><%= cat.category %></h3>
+        <p><%= cat.itemCount %> items</p>
+      </a>
+    <% }) %>
+  </div>
+</section>
+</div>
+
 <%- include('footer') %>

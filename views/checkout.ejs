@@ -1,0 +1,82 @@
+<%- include('header') %>
+
+<div class="cart-page">
+  <h1 class="page-title">Checkout</h1>
+
+  <% if (!cartItems || cartItems.length === 0) { %>
+    <div class="empty-cart">
+      <h2 class="empty-title">Your cart is empty</h2>
+      <p class="empty-text">Add some products before checking out.</p>
+      <a href="/products" class="primary-btn">Browse Products</a>
+    </div>
+  <% } else { %>
+    <section class="cart-layout">
+      <div class="cart-items-column">
+        <% cartItems.forEach(item => { %>
+          <div class="cart-card">
+            <div>
+              <img
+                src="<%= item.imageURL || '/images/placeholder.jpg' %>"
+                alt="<%= item.product %>"
+                class="product-image"
+              />
+            </div>
+
+            <div>
+              <h3 class="product-name"><%= item.product %></h3>
+
+              <% if (item.color) { %>
+                <p class="product-meta">Color: <%= item.color %></p>
+              <% } %>
+
+              <% if (item.size) { %>
+                <p class="product-meta">Size: <%= item.size %></p>
+              <% } %>
+
+              <p class="product-price">
+                $<%= Number(item.onSale && item.salePrice ? item.salePrice : item.price).toFixed(2) %>
+              </p>
+
+              <p class="product-meta">Qty: <%= item.quantity %></p>
+            </div>
+
+            <div class="item-right">
+              <p class="item-subtotal">
+                Subtotal: $<%= Number(item.itemTotal).toFixed(2) %>
+              </p>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <aside class="summary-card">
+        <h2 class="summary-title">Order Summary</h2>
+
+        <div class="summary-lines">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>$<%= Number(subtotal).toFixed(2) %></span>
+          </div>
+
+          <div class="summary-row">
+            <span>Tax (8.25%)</span>
+            <span>$<%= Number(tax).toFixed(2) %></span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <span>$<%= Number(total).toFixed(2) %></span>
+          </div>
+        </div>
+
+        <form action="/checkout/place-order" method="POST">
+          <button type="submit" class="checkout-btn">Place Order</button>
+        </form>
+
+        <a href="/cart" class="secondary-btn">Back to Cart</a>
+      </aside>
+    </section>
+  <% } %>
+</div>
+
+<%- include('footer') %>
