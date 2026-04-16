@@ -217,21 +217,38 @@ app.post("/cart/remove/:cartId", checkAuthenticated, async (req, res) => {
 
 app.get("/admin", checkAuthenticated, checkAdmin, async (req, res) => {
   try {
-    const [orders] = await pool.query(`
-      SELECT 
-        o.orderID, o.customerID, u.firstName, u.lastName,
-        o.orderDate, o.status, o.orderTotal
+    const { sortBy, sortDir, statusFilter } = req.query;
+
+    // whitelist sort columns
+    const validSort = {
+      date: "o.orderDate",
+      customer: "u.lastName",
+      total: "o.orderTotal",
+    };
+    const col = validSort[sortBy] || "o.orderDate";
+    const dir = sortDir === "ASC" ? "ASC" : "DESC";
+
+    // base query
+    let orderQuery = `
+      SELECT o.orderID, o.customerID, u.firstName, u.lastName,
+             o.orderDate, o.status, o.orderTotal
       FROM Orders o
       LEFT JOIN Users u ON o.customerID = u.UserID
-      ORDER BY o.orderDate DESC
-      LIMIT 20
-    `);
+    `;
 
+    // filter by status if provided
+    const params = [];
+    if (statusFilter && statusFilter !== "all") {
+      orderQuery += " WHERE o.status = ?";
+      params.push(statusFilter);
+    }
+
+    orderQuery += ` ORDER BY ${col} ${dir} LIMIT 50`;
+
+    const [orders] = await pool.query(orderQuery, params);
     const [discounts] = await pool.query(
       "SELECT * FROM DiscountCodes ORDER BY createdAt DESC",
     );
-    console.log("Discounts fetched:", discounts);
-
     const [users] = await pool.query(
       "SELECT UserID, firstName, lastName, email, role FROM Users ORDER BY UserID ASC",
     );
@@ -242,6 +259,7 @@ app.get("/admin", checkAuthenticated, checkAdmin, async (req, res) => {
       orders,
       discounts,
       users,
+      query: req.query,
     });
   } catch (err) {
     console.error("Error fetching admin data:", err);
@@ -251,6 +269,7 @@ app.get("/admin", checkAuthenticated, checkAdmin, async (req, res) => {
       orders: [],
       discounts: [],
       users: [],
+      query: {},
       error: "Unable to load data",
     });
   }
