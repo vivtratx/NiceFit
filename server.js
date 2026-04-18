@@ -108,7 +108,7 @@ app.get("/products", checkAuthenticated, async (req, res) => {
         const { search, sortPrice, sortStock } = req.query;
 
         // only show things in stock
-        let query = "SELECT * FROM Inventory WHERE quantity > 0";
+        let query = "SELECT * FROM Inventory WHERE 1=1";
         let params = [];
 
         // for searching
@@ -119,7 +119,7 @@ app.get("/products", checkAuthenticated, async (req, res) => {
         }
 
         let orderClauses = [];
-        
+
         // sorting by availability
         if (sortStock === 'high') {
             orderClauses.push("quantity DESC");
@@ -135,7 +135,7 @@ app.get("/products", checkAuthenticated, async (req, res) => {
         if (orderClauses.length > 0) {
             query += " ORDER BY " + orderClauses.join(", ");
         } else {
-            query += " ORDER BY product ASC";
+            query += " ORDER BY product ASC ";
         }
 
         const [products] = await pool.query(query, params);
@@ -152,6 +152,28 @@ app.get("/products", checkAuthenticated, async (req, res) => {
         res.status(500).send("Database Error");
     }
 });
+
+
+
+
+app.get("/product/:id", checkAuthenticated, async (req, res) => {
+    const productId = req.params.id;
+    try {
+        const [rows] = await pool.query("SELECT * FROM Inventory WHERE ProductID = ?", [productId]);
+
+        if (rows.length > 0) {
+            res.render("product-detail.ejs", { product: rows[0], user: req.user });
+        } else {
+            res.status(404).send("Product not found");
+        }
+    } catch (err) {
+        console.error(err);
+        res.redirect("/products");
+    }
+});
+
+
+
 
 app.get("/cart", checkAuthenticated, async (req, res) => {
   try {

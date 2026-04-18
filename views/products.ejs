@@ -4,30 +4,34 @@
   <p>No products.</p>
 <% } else { %>
   <!-- adding searching and sorting by price and availability -->
-  <section class="filters" style="margin-bottom: 20px; padding: 7px; background: #f4f4f4; border-radius: 8px;">
-  <form action="/products" method="GET" style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+  <section class="filters" style="margin-bottom: 30px; padding: 20px; background: #f4f4f4; border-radius: 12px; border: 1px;">
+  <form action="/products" method="GET" style="display: flex; gap: 25px; flex-wrap: wrap; align-items: flex-end;">
     
-    <div style="display: flex; align-items: center; gap: 10px; flex: grow 1;">
+    <div style="display: flex; align-items: center; gap: 8px; min-width: 300px;">
       <label for="search">Search:</label>
-      <input type="text" name="search" id="search" placeholder="Item name or description..." value="<%= typeof query !== 'undefined' ? query.search : '' %>">
+      <input type="text" name="search" id="search" placeholder="Item name or description..." value="<%= typeof query !== 'undefined' ? query.search : '' %>" style="padding: 11px">
     </div>
 
-    <div style="display: flex; align-items: center; gap: 15px;">
+    <div style="display: flex; align-items: center; gap: 8px; min-width: 200px;">
       <label for="sortPrice">Price:</label>
-      <select name="sortPrice" id="sortPrice">
-        <option value="">Default</option>
-        <option value="ASC">Low to High</option>
-        <option value="DESC">High to Low</option>
+      <select name="sortPrice" id="sortPrice" style="padding: 12px">
+        <option value=""<%= !query.sortPrice ? 'selected' : '' %>>Default</option>
+        <option value="ASC" <%= query.sortPrice === 'ASC' ? 'selected' : '' %>>Low to High</option>
+        <option value="DESC" <%= query.sortPrice === 'DESC' ? 'selected' : '' %>>High to Low</option>
       </select>
     </div>
 
-    <div>
+    <div style="display: flex; align-items: center; gap: 8px; min-width: 200px;">
       <label for="sortStock">Availability:</label>
-      <select name="sortStock" id="sortStock">
-        <option value="">Default</option>
-        <option value="DESC">In Stock First</option>
-        <option value="ASC">Out of Stock First</option>
-      </select>
+    <select name="sortStock" id="sortStock" style="padding: 12px">
+        <option value="" <%= !query.sortStock ? 'selected' : '' %>>Default</option>
+        <option value="high" <%= query.sortStock === 'high' ? 'selected' : '' %>>
+            In Stock First
+        </option>
+        <option value="low" <%= query.sortStock === 'low' ? 'selected' : '' %>>
+            Out of Stock First
+        </option>
+    </select>
     </div>
 
     <div style="margin-left: auto; display: flex; align-items: center; gap: 15px">
@@ -37,33 +41,51 @@
 
   </form>
 </section>
-  <table>
-    <tr>
-      <th>Product</th>
-      <th>Category</th>
-      <th>Color</th>
-      <th>Size</th>
-      <th>Price</th>
-      <th>Stock</th>
-      <th>Action</th>
-    </tr>
-    <% products.forEach(p => { %>
-    <tr>
-      <td><%= p.product %></td>
-      <td><%= p.category %></td>
-      <td><%= p.color %></td>
-      <td><%= p.size %></td>
-      <td>$<%= p.price %></td>
-      <td><%= p.quantity %></td>
-      <td>
-        <form action="/cart/add" method="POST" style="display:inline;">
-          <input type="hidden" name="productId" value="<%= p.ProductID %>">
-          <input type="number" name="quantity" min="1" max="<%= p.quantity %>" value="1" style="width:50px;">
-          <button type="submit">Add</button>
-        </form>
-      </td>
-    </tr>
-    <% }) %>
-  </table>
+
+<div class="featured-grid">
+  <% products.forEach(item => { %>
+    <a href="/product/<%= item.ProductID %>" class="product-card-link">
+      <div class="product-card">
+
+        <div class="product-image-wrap">
+          <img src="<%= item.imageURL %>" 
+              alt="<%= item.product %>" 
+              class="product-img <%= item.quantity === 0 ? 'sold-out-blur' : '' %>">
+          
+          <% if (item.onSale) { %>
+            <span class="sale-badge">Sale</span>
+          <% } %>
+        </div>
+
+        <div class="product-info">
+          <h3><%= item.product %></h3>
+          
+          <div class="grid-stock-status">
+            <% if (item.quantity > 5) { %>
+                <span class="stock-text in-stock">In Stock (<%= item.quantity %>)</span>
+            <% } else if (item.quantity > 0) { %>
+                <span class="stock-text low-stock">Only <%= item.quantity %> left!</span>
+            <% } else { %>
+                <span class="stock-text out-of-stock">Sold Out</span>
+            <% } %>
+        </div>
+
+          <div class="price-group">
+            <% if (item.onSale) { %>
+              <span class="sale-price">$<%= item.salePrice %></span>
+              <span class="old-price">$<%= item.price %></span>
+            <% } else { %>
+              <span class="regular-price">$<%= item.price %></span>
+            <% } %>
+          </div>
+          <div class="product-size-tag">
+              <span class="size-label">Size: <%= item.size %></span>
+          </div>
+        </div>
+      </div>
+    </a>
+  <% }) %>
+  </div>
+
 <% } %>
 <%- include('footer') %>
