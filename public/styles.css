@@ -481,7 +481,9 @@ button {
   padding: 34px 18px;
   text-align: center;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .category-card:hover {
@@ -999,6 +1001,118 @@ button {
   color: var(--text);
 }
 
+.admin-page h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.admin-form-grid label,
+.admin-full-width {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-form-grid input,
+.admin-form-grid select,
+.admin-inventory-create > label input,
+.admin-inventory-create .admin-full-width textarea {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.admin-inventory-create {
+  margin-bottom: 1.5rem;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-dark);
+  border-radius: 12px;
+  max-width: 960px;
+}
+
+.admin-inventory-create > label {
+  display: inline-block;
+  margin-right: 16px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.admin-checkbox input {
+  width: auto;
+  margin: 0;
+}
+
+.admin-full-width {
+  margin: 10px 0;
+}
+
+.admin-full-width textarea {
+  width: 100%;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+
+.admin-inventory-table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.admin-inventory-create button[type="submit"] {
+  margin-top: 12px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.inventory-dropdown > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  user-select: none;
+}
+
+.inventory-dropdown > summary:hover {
+  opacity: 0.75;
+}
+
+.admin-full-width-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.admin-full-width-row .admin-full-width {
+  flex: 1;
+}
+
 /* =========================================
    GENERIC TABLES
    ========================================= */
@@ -1154,7 +1268,6 @@ table th {
   }
 }
 
-
 .product-card-link {
   display: block;
   color: inherit;
@@ -1167,7 +1280,9 @@ table th {
 }
 
 .product-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
 }
 
@@ -1199,7 +1314,7 @@ table th {
   padding: 40px;
   border-radius: 12px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .checkmark {

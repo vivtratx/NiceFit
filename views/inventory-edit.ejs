@@ -1,0 +1,64 @@
+<%- include('header') %>
+
+<div class="admin-page cart-page">
+  <h1 class="page-title">Edit inventory</h1>
+  <p><a href="/admin">← Back to admin</a></p>
+
+  <form
+    action="/admin/inventory/<%= item.ProductID %>?_method=PUT"
+    method="POST"
+    class="admin-inventory-create"
+  >
+    <div class="admin-form-grid">
+      <label>Product name
+        <input type="text" name="product" required maxlength="150" value="<%= item.product %>" />
+      </label>
+      <label>Category
+        <input type="text" name="category" maxlength="100" value="<%= item.category || '' %>" />
+      </label>
+      <label>Gender
+        <select name="gender" required>
+          <% genders.forEach(function (g) { %>
+            <option value="<%= g %>" <%= item.gender === g ? 'selected' : '' %>><%= g %></option>
+          <% }); %>
+        </select>
+      </label>
+      <label>Color
+        <input type="text" name="color" maxlength="50" value="<%= item.color || '' %>" />
+      </label>
+      <label>Size
+        <input type="text" name="size" maxlength="10" value="<%= item.size || '' %>" />
+      </label>
+      <label>Price
+        <input type="number" name="price" step="0.01" min="0" required value="<%= item.price %>" />
+      </label>
+      <label>Quantity
+        <input type="number" name="quantity" min="0" step="1" required value="<%= item.quantity %>" />
+      </label>
+      <label>Image URL
+        <input type="text" name="imageURL" maxlength="500" value="<%= item.imageURL || '' %>" placeholder="/images/file.jpg" />
+      </label>
+    </div>
+    <label class="admin-checkbox">
+      <input type="checkbox" name="onSale" value="1" <%= item.onSale ? 'checked' : '' %> /> On sale
+    </label>
+    <div class="admin-full-width-row">
+      <label>Sale price
+        <input
+          type="number"
+          name="salePrice"
+          step="0.01"
+          min="0"
+          value="<%= item.salePrice != null ? item.salePrice : '' %>"
+          placeholder="If on sale"
+        />
+      </label>
+      <label class="admin-full-width">Description<br />
+        <textarea name="description" rows="3" maxlength="2000"><%= item.description || '' %></textarea>
+      </label>
+    </div>
+    <button type="submit">Save changes</button>
+  </form>
+</div>
+
+<%- include('footer') %>

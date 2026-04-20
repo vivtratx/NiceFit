@@ -12,6 +12,53 @@ const session = require("express-session");
 const methodOverride = require("method-override");
 const pool = require("./lib/db");
 
+const GENDERS = ["Men", "Women", "Unisex", "Kids"];
+
+function normalizeImageURL(raw) {
+  const s = (raw || "").trim();
+  if (!s) return null;
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  if (s.startsWith("/")) return s;
+  return "/" + s.replace(/^\/+/, "");
+}
+
+function parseInventoryBody(body) {
+  const product = (body.product || "").trim();
+  const description = (body.description || "").trim() || null;
+  const category = (body.category || "").trim() || null;
+  let gender = (body.gender || "Unisex").trim();
+  if (!GENDERS.includes(gender)) gender = "Unisex";
+  const color = (body.color || "").trim() || null;
+  const size = (body.size || "").trim() || null;
+  const price = Number(body.price);
+  const quantity = Math.max(0, parseInt(body.quantity, 10) || 0);
+  const onSale = body.onSale === "1" || body.onSale === "on";
+  let salePrice = null;
+  if (
+    onSale &&
+    body.salePrice != null &&
+    String(body.salePrice).trim() !== ""
+  ) {
+    const sp = Number(body.salePrice);
+    if (!Number.isNaN(sp)) salePrice = sp;
+  }
+  const imageURL = normalizeImageURL(body.imageURL);
+
+  return {
+    product,
+    description,
+    category,
+    gender,
+    color,
+    size,
+    price,
+    quantity,
+    onSale: onSale ? 1 : 0,
+    salePrice,
+    imageURL,
+  };
+}
+
 const initializePassport = require("./passport-config");
 initializePassport(passport, pool);
 
@@ -20,6 +67,7 @@ initializePassport(passport, pool);
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 app.use(flash());
 app.use(
   session({
@@ -31,7 +79,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride("_method"));
-app.use(express.json());
 app.use("/images", express.static("images"));
 
 // Setting up the routes
@@ -391,12 +438,19 @@ app.get("/admin", checkAuthenticated, async (req, res) => {
       SELECT UserID, firstName, lastName, email, role FROM Users ORDER BY firstName
     `);
 
+    const [inventory] = await pool.query(`
+      SELECT * FROM Inventory
+      ORDER BY category, product, color, size, ProductID
+    `);
+
     res.render("admin.ejs", {
       name: req.user.firstName,
       user: req.user,
       orders,
       discounts: discounts || [],
       users: users || [],
+      inventory: inventory || [],
+      genders: GENDERS,
       query: req.query,
     });
   } catch (err) {
@@ -407,6 +461,8 @@ app.get("/admin", checkAuthenticated, async (req, res) => {
       orders: [],
       discounts: [],
       users: [],
+      inventory: [],
+      genders: GENDERS,
       query: {},
       error: "Unable to load admin data",
     });
@@ -458,6 +514,140 @@ app.delete("/logout", (req, res) => {
     }
     res.redirect("/login");
   });
+});
+
+// Create inventory SKU
+app.post("/admin/inventory", checkAuthenticated, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.redirect("/admin");
+    }
+
+    const row = parseInventoryBody(req.body);
+    if (!row.product || Number.isNaN(row.price) || row.price < 0) {
+      return res.redirect("/admin");
+    }
+
+    await pool.query(
+      `INSERT INTO Inventory
+        (product, description, category, gender, color, size, price, quantity, onSale, salePrice, imageURL)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        row.product,
+        row.description,
+        row.category,
+        row.gender,
+        row.color,
+        row.size,
+        row.price,
+        row.quantity,
+        row.onSale,
+        row.salePrice,
+        row.imageURL,
+      ],
+    );
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Error creating inventory:", err);
+    res.redirect("/admin");
+  }
+});
+
+// Edit inventory form
+app.get(
+  "/admin/inventory/:productId/edit",
+  checkAuthenticated,
+  async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.redirect("/admin");
+      }
+
+      const productId = parseInt(req.params.productId, 10);
+      if (Number.isNaN(productId)) {
+        return res.redirect("/admin");
+      }
+
+      const [rows] = await pool.query(
+        "SELECT * FROM Inventory WHERE ProductID = ? LIMIT 1",
+        [productId],
+      );
+
+      const item = rows[0];
+      if (!item) {
+        return res.redirect("/admin");
+      }
+
+      res.render("inventory-edit.ejs", {
+        name: req.user.firstName,
+        user: req.user,
+        item,
+        genders: GENDERS,
+      });
+    } catch (err) {
+      console.error("Error loading inventory edit:", err);
+      res.redirect("/admin");
+    }
+  },
+);
+
+// Update inventory SKU
+app.put("/admin/inventory/:productId", checkAuthenticated, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.redirect("/admin");
+    }
+
+    const productId = parseInt(req.params.productId, 10);
+    if (Number.isNaN(productId)) {
+      return res.redirect("/admin");
+    }
+
+    const row = parseInventoryBody(req.body);
+    if (!row.product || Number.isNaN(row.price) || row.price < 0) {
+      return res.redirect(`/admin/inventory/${productId}/edit`);
+    }
+
+    const [result] = await pool.query(
+      `UPDATE Inventory SET
+        product = ?,
+        description = ?,
+        category = ?,
+        gender = ?,
+        color = ?,
+        size = ?,
+        price = ?,
+        quantity = ?,
+        onSale = ?,
+        salePrice = ?,
+        imageURL = ?
+       WHERE ProductID = ?`,
+      [
+        row.product,
+        row.description,
+        row.category,
+        row.gender,
+        row.color,
+        row.size,
+        row.price,
+        row.quantity,
+        row.onSale,
+        row.salePrice,
+        row.imageURL,
+        productId,
+      ],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.redirect("/admin");
+    }
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Error updating inventory:", err);
+    res.redirect("/admin");
+  }
 });
 
 // Create discount code
@@ -681,9 +871,7 @@ app.get("/orders", checkAuthenticated, async (req, res) => {
         ids,
       );
 
-      const byOrderId = new Map(
-        ordersWithItems.map((o) => [o.orderID, o]),
-      );
+      const byOrderId = new Map(ordersWithItems.map((o) => [o.orderID, o]));
       for (const row of items) {
         const order = byOrderId.get(row.orderID);
         if (order) {
