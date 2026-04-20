@@ -65,7 +65,7 @@
 <h3>Inventory</h3>
 <p>Add a new SKU (one row per product + color + size).</p>
 
-<form action="/admin/inventory" method="POST" class="admin-inventory-create">
+<form action="/admin/inventory/create" method="POST" class="admin-inventory-create">
   <div class="admin-form-grid">
     <label>Product name <input type="text" name="product" required maxlength="150" placeholder="e.g. Ribbed Crop Tank" /></label>
     <label>Category <input type="text" name="category" maxlength="100" placeholder="Tops" /></label>
@@ -120,8 +120,8 @@
         <td><%= inv.quantity %></td>
         <td><%= inv.onSale ? (inv.salePrice != null ? '$' + Number(inv.salePrice).toFixed(2) : 'Yes') : '—' %></td>
         <td>
-          <a href="/admin/inventory/<%= inv.ProductID %>/edit">Edit</a>
-          <form action="/admin/inventory/<%= inv.ProductID %>?_method=DELETE" method="POST">
+          <a href="/admin/inventory/item/<%= inv.ProductID %>/edit">Edit</a>
+          <form action="/admin/inventory/item/<%= inv.ProductID %>?_method=DELETE" method="POST">
             <button type="submit">Delete</button>
           </form>
         </td>

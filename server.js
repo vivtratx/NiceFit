@@ -517,7 +517,8 @@ app.delete("/logout", (req, res) => {
 });
 
 // Create inventory SKU
-app.post("/admin/inventory", checkAuthenticated, async (req, res) => {
+app.post("/admin/inventory/create", checkAuthenticated, async (req, res) => {
+  console.log("POST /admin/inventory body:", req.body);
   try {
     if (req.user.role !== "admin") {
       return res.redirect("/admin");
@@ -556,7 +557,7 @@ app.post("/admin/inventory", checkAuthenticated, async (req, res) => {
 
 // Edit inventory form
 app.get(
-  "/admin/inventory/:productId/edit",
+  "/admin/inventory/item/:productId/edit",
   checkAuthenticated,
   async (req, res) => {
     try {
@@ -593,24 +594,27 @@ app.get(
 );
 
 // Update inventory SKU
-app.put("/admin/inventory/:productId", checkAuthenticated, async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.redirect("/admin");
-    }
+app.put(
+  "/admin/inventory/item/:productId",
+  checkAuthenticated,
+  async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.redirect("/admin");
+      }
 
-    const productId = parseInt(req.params.productId, 10);
-    if (Number.isNaN(productId)) {
-      return res.redirect("/admin");
-    }
+      const productId = parseInt(req.params.productId, 10);
+      if (Number.isNaN(productId)) {
+        return res.redirect("/admin");
+      }
 
-    const row = parseInventoryBody(req.body);
-    if (!row.product || Number.isNaN(row.price) || row.price < 0) {
-      return res.redirect(`/admin/inventory/${productId}/edit`);
-    }
+      const row = parseInventoryBody(req.body);
+      if (!row.product || Number.isNaN(row.price) || row.price < 0) {
+        return res.redirect(`/admin/inventory/item/${productId}/edit`);
+      }
 
-    const [result] = await pool.query(
-      `UPDATE Inventory SET
+      const [result] = await pool.query(
+        `UPDATE Inventory SET
         product = ?,
         description = ?,
         category = ?,
@@ -623,32 +627,54 @@ app.put("/admin/inventory/:productId", checkAuthenticated, async (req, res) => {
         salePrice = ?,
         imageURL = ?
        WHERE ProductID = ?`,
-      [
-        row.product,
-        row.description,
-        row.category,
-        row.gender,
-        row.color,
-        row.size,
-        row.price,
-        row.quantity,
-        row.onSale,
-        row.salePrice,
-        row.imageURL,
-        productId,
-      ],
-    );
+        [
+          row.product,
+          row.description,
+          row.category,
+          row.gender,
+          row.color,
+          row.size,
+          row.price,
+          row.quantity,
+          row.onSale,
+          row.salePrice,
+          row.imageURL,
+          productId,
+        ],
+      );
 
-    if (result.affectedRows === 0) {
-      return res.redirect("/admin");
+      if (result.affectedRows === 0) {
+        return res.redirect("/admin");
+      }
+
+      res.redirect("/admin");
+    } catch (err) {
+      console.error("Error updating inventory:", err);
+      res.redirect("/admin");
     }
+  },
+);
+// Delete inventory SKU
+app.delete(
+  "/admin/inventory/item/:productId",
+  checkAuthenticated,
+  async (req, res) => {
+    try {
+      if (req.user.role !== "admin") return res.redirect("/admin");
 
-    res.redirect("/admin");
-  } catch (err) {
-    console.error("Error updating inventory:", err);
-    res.redirect("/admin");
-  }
-});
+      const productId = parseInt(req.params.productId, 10);
+      if (Number.isNaN(productId)) return res.redirect("/admin");
+
+      await pool.query("DELETE FROM Inventory WHERE ProductID = ?", [
+        productId,
+      ]);
+      res.redirect("/admin");
+    } catch (err) {
+      console.error("Error deleting inventory:", err);
+      res.redirect("/admin");
+    }
+  },
+);
 
 // Create discount code
 app.post("/admin/discounts", checkAuthenticated, async (req, res) => {
