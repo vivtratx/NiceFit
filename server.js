@@ -655,4 +655,62 @@ app.get("/thank-you", checkAuthenticated, (req, res) => {
   });
 });
 
+app.get("/orders", checkAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user.UserID;
+
+    const [orders] = await pool.query(
+      `SELECT orderID, orderDate, status, subtotal, taxAmount, discountAmount, orderTotal
+       FROM Orders
+       WHERE customerID = ?
+       ORDER BY orderDate DESC`,
+      [userId],
+    );
+
+    const ordersWithItems = orders.map((o) => ({ ...o, items: [] }));
+
+    if (orders.length > 0) {
+      const ids = orders.map((o) => o.orderID);
+      const placeholders = ids.map(() => "?").join(",");
+      const [items] = await pool.query(
+        `SELECT oi.orderID, oi.quantity, oi.priceAtPurchase, i.product, i.imageURL
+         FROM OrderItems oi
+         JOIN Inventory i ON i.ProductID = oi.productID
+         WHERE oi.orderID IN (${placeholders})
+         ORDER BY oi.itemID ASC`,
+        ids,
+      );
+
+      const byOrderId = new Map(
+        ordersWithItems.map((o) => [o.orderID, o]),
+      );
+      for (const row of items) {
+        const order = byOrderId.get(row.orderID);
+        if (order) {
+          order.items.push({
+            product: row.product,
+            quantity: row.quantity,
+            priceAtPurchase: row.priceAtPurchase,
+            imageURL: row.imageURL,
+          });
+        }
+      }
+    }
+
+    res.render("orders.ejs", {
+      name: req.user.firstName,
+      user: req.user,
+      orders: ordersWithItems,
+    });
+  } catch (err) {
+    console.error("Error loading orders:", err);
+    res.status(500).render("orders.ejs", {
+      name: req.user.firstName,
+      user: req.user,
+      orders: [],
+      error: "We could not load your orders. Please try again later.",
+    });
+  }
+});
+
 app.listen(3000);

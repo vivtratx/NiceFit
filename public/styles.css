@@ -880,6 +880,86 @@ button {
 }
 
 /* =========================================
+   ORDERS (ORDER HISTORY)
+   ========================================= */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.order-block {
+  background: #fafafa;
+  border: 1px solid var(--border-dark);
+  border-radius: 18px;
+  padding: 20px 18px 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.order-block-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.order-block-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.order-block-meta {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.order-status {
+  text-transform: capitalize;
+}
+
+.order-block-total {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.order-totals-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.order-items-empty {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.orders-page .cart-card {
+  grid-template-columns: 96px 1fr;
+}
+
+.orders-retry {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.orders-retry .secondary-btn {
+  display: inline-block;
+  width: auto;
+  margin-top: 0;
+}
+
+/* =========================================
    ADMIN PAGE
    ========================================= */
 .admin-page h1 {

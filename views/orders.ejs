@@ -1,0 +1,77 @@
+<%- include('header') %>
+
+<div class="cart-page orders-page">
+  <h1 class="page-title">My Orders</h1>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="error-alert"><%= error %></div>
+    <p class="orders-retry">
+      <a href="/orders" class="secondary-btn">Try again</a>
+    </p>
+  <% } else if (!orders || orders.length === 0) { %>
+    <section class="empty-cart">
+      <div class="empty-icon">📦</div>
+      <h2 class="empty-title">No orders yet</h2>
+      <p class="empty-text">When you place an order, it will show up here.</p>
+      <a href="/products" class="primary-btn">Browse Products</a>
+    </section>
+  <% } else { %>
+    <div class="orders-list">
+      <% orders.forEach((order) => { %>
+        <section class="order-block">
+          <header class="order-block-header">
+            <div>
+              <h2 class="order-block-title">Order #<%= order.orderID %></h2>
+              <p class="order-block-meta">
+                <%= new Date(order.orderDate).toLocaleString() %>
+                · <span class="order-status"><%= order.status %></span>
+              </p>
+            </div>
+            <p class="order-block-total">
+              Total: <strong>$<%= Number(order.orderTotal).toFixed(2) %></strong>
+            </p>
+          </header>
+
+          <div class="order-totals-detail">
+            <span>Subtotal $<%= Number(order.subtotal).toFixed(2) %></span>
+            <% if (Number(order.discountAmount) > 0) { %>
+              <span>Discount −$<%= Number(order.discountAmount).toFixed(2) %></span>
+            <% } %>
+            <span>Tax $<%= Number(order.taxAmount).toFixed(2) %></span>
+          </div>
+
+          <% if (!order.items || order.items.length === 0) { %>
+            <p class="order-items-empty">No line items found for this order.</p>
+          <% } else { %>
+            <div class="cart-items-column">
+              <% order.items.forEach((line) => { %>
+                <div class="cart-card">
+                  <div>
+                    <img
+                      src="<%= line.imageURL || '/images/placeholder.jpg' %>"
+                      alt="<%= line.product %>"
+                      class="product-image"
+                    />
+                  </div>
+                  <div>
+                    <h3 class="product-name"><%= line.product %></h3>
+                    <p class="product-meta">Qty: <%= line.quantity %></p>
+                    <p class="product-price">
+                      $<%= Number(line.priceAtPurchase).toFixed(2) %> each
+                    </p>
+                    <p class="product-meta">
+                      Line total:
+                      $<%= (Number(line.priceAtPurchase) * Number(line.quantity)).toFixed(2) %>
+                    </p>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('footer') %>
