@@ -1,0 +1,72 @@
+
+    <%- include('header') %> 
+    <main class="product-page-wrapper">
+        <header class="product-header">
+            <a href="/products" class="back-link">← Back to Products</a>
+        </header>
+
+        <div class="product-container">
+            <div class="product-visual-section">
+                <img src="<%= product.imageURL %>" 
+                alt="<%= product.product %>" 
+                class="main-product-image <%= product.quantity === 0 ? 'sold-out-blur' : '' %>">
+                
+                <% if (product.onSale) { %>
+                    <span class="sale-badge">Sale</span>
+                <% } %>
+            </div>
+
+            <div class="product-info-section">
+                <span class="category-tag"><%= product.category %></span>
+                <h1><%= product.product %></h1>
+                
+                <div class="price-section">
+                    <span class="current-price">$<%= product.salePrice || product.price %></span>
+                    <% if (product.onSale) { %>
+                        <span class="old-price">$<%= product.price %></span>
+                    <% } %>
+                </div>
+
+                <p class="product-description"><%= product.description %></p>
+
+                <div class="stock-status">
+                    <% if (product.quantity > 0) { %>
+                        <span class="in-stock-badge">
+                            ● In Stock: <%= product.quantity %> available
+                        </span>
+                    <% } else { %>
+                        <span class="out-of-stock-badge">
+                            ● Out of Stock
+                        </span>
+                    <% } %>
+                </div>
+
+                <% if (product.size) { %>
+                    <p class="size-info"><strong>Size:</strong> <%= product.size %></p>
+                <% } %>
+
+                <form action="/cart/add" method="POST" class="add-cart-form">
+                    <input type="hidden" name="productId" value="<%= product.ProductID %>">
+                    
+                    <div class="quantity-input-group">
+                        <label for="quantity">Qty</label>
+                        <input type="number" 
+                            id="quantity" 
+                            name="quantity" 
+                            value="1" 
+                            min="1" 
+                            max="<%= product.quantity %>">
+                    </div>
+
+                    <button type="submit" 
+                        class="btn-add-to-cart" 
+                        <%= product.quantity === 0 ? 'disabled' : '' %>>
+                    
+                    <%= product.quantity === 0 ? 'Sold Out' : 'Add to Cart' %>
+                </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <%- include('footer') %>

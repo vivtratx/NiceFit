@@ -58,6 +58,13 @@
             <span>$<%= Number(subtotal).toFixed(2) %></span>
           </div>
 
+          <% if (typeof discountAmount !== 'undefined' && discountAmount > 0) { %>
+              <div class="summary-row discount-line" style="color: #ff3b30;">
+                  <span>Discount (<%= appliedCode %>)</span>
+                  <span>-$<%= Number(discountAmount).toFixed(2) %></span>
+              </div>
+          <% } %>
+
           <div class="summary-row">
             <span>Tax (8.25%)</span>
             <span>$<%= Number(tax).toFixed(2) %></span>
@@ -70,7 +77,9 @@
         </div>
 
         <form action="/checkout/place-order" method="POST">
-          <button type="submit" class="checkout-btn">Place Order</button>
+            <input type="hidden" name="discountCode" value="<%= appliedCode %>">
+            
+            <button type="submit">Place Order</button>
         </form>
 
         <a href="/cart" class="secondary-btn">Back to Cart</a>

@@ -153,7 +153,7 @@ app.get("/products", checkAuthenticated, async (req, res) => {
     const { search, sortPrice, sortStock } = req.query;
 
     // only show things in stock
-    let query = "SELECT * FROM Inventory WHERE quantity > 0";
+    let query = "SELECT * FROM Inventory WHERE 1=1";
     let params = [];
 
     // for searching
@@ -195,6 +195,22 @@ app.get("/products", checkAuthenticated, async (req, res) => {
     console.error("Error fetching products:", err);
     res.status(500).send("Database Error");
   }
+});
+
+app.get("/product/:id", checkAuthenticated, async (req, res) => {
+    const productId = req.params.id;
+    try {
+        const [rows] = await pool.query("SELECT * FROM Inventory WHERE ProductID = ?", [productId]);
+
+        if (rows.length > 0) {
+            res.render("product-detail.ejs", { product: rows[0], user: req.user });
+        } else {
+            res.status(404).send("Product not found");
+        }
+    } catch (err) {
+        console.error(err);
+        res.redirect("/products");
+    }
 });
 
 app.get("/cart", checkAuthenticated, async (req, res) => {
@@ -341,6 +357,8 @@ app.post("/cart/apply-discount", checkAuthenticated, async (req, res) => {
 
     if (codes.length > 0) {
       const code = codes[0];
+
+      req.session.discountCode = code.code;
 
       if (code.discountType === "percent") {
         discountAmount = subtotal * (Number(code.discountValue) / 100);
@@ -813,16 +831,45 @@ app.get("/checkout", checkAuthenticated, async (req, res) => {
       (sum, item) => sum + (Number(item.itemTotal) || 0),
       0,
     );
-    const tax = subtotal * 0.0825;
-    const total = subtotal + tax;
+
+    const appliedCode = req.session.discountCode || null;
+    let discountAmount = 0;
+
+    if (appliedCode) {
+        const [discountResults] = await pool.query(
+            "SELECT discountType, discountValue FROM DiscountCodes WHERE code = ? AND isActive = 1", 
+            [appliedCode]
+        );
+
+        if (discountResults.length > 0) {
+            const d = discountResults[0];
+            const val = Number(d.discountValue);
+
+            if (d.discountType === 'percent') {
+                discountAmount = subtotal * (val / 100);
+            } else {
+                discountAmount = val;
+            }
+        }
+    }
+
+    const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+    const tax = discountedSubtotal * 0.0825;
+    const total = discountedSubtotal + tax;
+
+    console.log("Session Code:", req.session.discountCode);
+    console.log("Subtotal:", subtotal);
+    console.log("Calculated Discount:", discountAmount);
 
     res.render("checkout.ejs", {
       name: req.user.firstName,
       user: req.user,
       cartItems,
       subtotal,
+      discountAmount,
       tax,
       total,
+      appliedCode: req.session.discountCode || ""
     });
   } catch (err) {
     console.error("Error loading checkout:", err);
@@ -853,7 +900,8 @@ app.post("/checkout/place-order", checkAuthenticated, async (req, res) => {
     if (!orderID || Number(orderID) < 0) {
       return res.redirect("/cart");
     }
-
+    
+    req.session.discountCode = null;
     res.redirect(`/thank-you?orderID=${orderID}`);
   } catch (err) {
     console.error("Error placing order:", err);
