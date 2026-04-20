@@ -17,11 +17,15 @@
             </div>
 
             <div class="product-info-section">
-                <span class="category-tag"><%= product.category %></span>
+                <<a href="/products?category=<%= product.category %>" class="category-tag">
+                    <%= product.category %>
+                </a>
                 <h1><%= product.product %></h1>
                 
                 <div class="price-section">
-                    <span class="current-price">$<%= product.salePrice || product.price %></span>
+                    <span class="current-price">
+                        $<%= Number(product.salePrice || product.price).toFixed(2) %>
+                    </span>
                     <% if (product.onSale) { %>
                         <span class="old-price">$<%= product.price %></span>
                     <% } %>

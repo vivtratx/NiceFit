@@ -22,7 +22,7 @@
         <p>Don't miss out on these amazing deals!</p>
       </div>
 
-      <a href="/products" class="view-all-btn">View All Sales</a>
+      <a href="/products?onSale=true" class="view-all-btn">View All Sales</a>
     </div>
 
 <div class="featured-grid">
@@ -63,6 +63,7 @@
 </div>
   </section>
 
+  <!-- shop by category -->
   <section class="category-section">
   <h2>Shop by Category</h2>
   <div class="category-grid">
@@ -73,7 +74,9 @@
       </a>
     <% }) %>
   </div>
-</section>
+</section>  
+
+
 </div>
 
 <%- include('footer') %>

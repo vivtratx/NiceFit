@@ -150,11 +150,21 @@ app.get("/test-db", async (req, res) => {
 // changed implementation for sorting
 app.get("/products", checkAuthenticated, async (req, res) => {
   try {
-    const { search, sortPrice, sortStock } = req.query;
+    const { search, sortPrice, sortStock, category, onSale } = req.query;
 
-    // only show things in stock
     let query = "SELECT * FROM Inventory WHERE 1=1";
     let params = [];
+
+    // filter products on sale
+    if (onSale === 'true') {
+        query += " AND salePrice IS NOT NULL AND salePrice > 0";
+    }
+
+    // filter category
+    if (category) {
+    query += " AND category = ?";
+    params.push(category);
+    }
 
     // for searching
     if (search) {
@@ -900,7 +910,7 @@ app.post("/checkout/place-order", checkAuthenticated, async (req, res) => {
     if (!orderID || Number(orderID) < 0) {
       return res.redirect("/cart");
     }
-    
+
     req.session.discountCode = null;
     res.redirect(`/thank-you?orderID=${orderID}`);
   } catch (err) {

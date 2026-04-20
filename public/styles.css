@@ -471,6 +471,7 @@ button {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+  margin-bottom: 60px;
 }
 
 .category-card {
