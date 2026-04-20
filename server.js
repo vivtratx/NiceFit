@@ -17,8 +17,6 @@ initializePassport(passport, pool);
 
 // Users now stored in database
 
-
-
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
@@ -102,62 +100,61 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// changed implementation for sorting 
+// changed implementation for sorting
 app.get("/products", checkAuthenticated, async (req, res) => {
-    try {
-        const { search, sortPrice, sortStock } = req.query;
+  try {
+    const { search, sortPrice, sortStock } = req.query;
 
-        // only show things in stock
-        let query = "SELECT * FROM Inventory WHERE quantity > 0";
-        let params = [];
+    // only show things in stock
+    let query = "SELECT * FROM Inventory WHERE quantity > 0";
+    let params = [];
 
-        // for searching
-        if (search) {
-            query += " AND (product LIKE ? OR description LIKE ?)";
-            const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm);
-        }
-
-        let orderClauses = [];
-        
-        // sorting by availability
-        if (sortStock === 'high') {
-            orderClauses.push("quantity DESC");
-        } else if (sortStock === 'low') {
-            orderClauses.push("quantity ASC");
-        }
-
-        // sorting by price
-        if (sortPrice === 'ASC' || sortPrice === 'DESC') {
-            orderClauses.push(`price ${sortPrice}`);
-        }
-
-        if (orderClauses.length > 0) {
-            query += " ORDER BY " + orderClauses.join(", ");
-        } else {
-            query += " ORDER BY product ASC";
-        }
-
-        const [products] = await pool.query(query, params);
-
-        res.render("products.ejs", {
-            name: req.user.firstName,
-            user: req.user,
-            products,
-            query: req.query
-        });
-
-    } catch (err) {
-        console.error("Error fetching products:", err);
-        res.status(500).send("Database Error");
+    // for searching
+    if (search) {
+      query += " AND (product LIKE ? OR description LIKE ?)";
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm);
     }
+
+    let orderClauses = [];
+
+    // sorting by availability
+    if (sortStock === "high") {
+      orderClauses.push("quantity DESC");
+    } else if (sortStock === "low") {
+      orderClauses.push("quantity ASC");
+    }
+
+    // sorting by price
+    if (sortPrice === "ASC" || sortPrice === "DESC") {
+      orderClauses.push(`price ${sortPrice}`);
+    }
+
+    if (orderClauses.length > 0) {
+      query += " ORDER BY " + orderClauses.join(", ");
+    } else {
+      query += " ORDER BY product ASC";
+    }
+
+    const [products] = await pool.query(query, params);
+
+    res.render("products.ejs", {
+      name: req.user.firstName,
+      user: req.user,
+      products,
+      query: req.query,
+    });
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    res.status(500).send("Database Error");
+  }
 });
 
 app.get("/cart", checkAuthenticated, async (req, res) => {
   try {
     const userId = req.user.UserID;
     const [cartItems] = await pool.query(
-  `
+      `
         SELECT 
             sc.cartID,
             sc.ProductID,
@@ -174,10 +171,13 @@ app.get("/cart", checkAuthenticated, async (req, res) => {
         JOIN Inventory i ON sc.ProductID = i.ProductID
         WHERE sc.UserID = ?
     `,
-  [userId],
-);
-    // converting item.itemTotal into a number 
-    const total = cartItems.reduce((sum, item) => sum + (Number(item.itemTotal) || 0), 0);
+      [userId],
+    );
+    // converting item.itemTotal into a number
+    const total = cartItems.reduce(
+      (sum, item) => sum + (Number(item.itemTotal) || 0),
+      0,
+    );
 
     res.render("cart.ejs", {
       name: req.user.firstName,
@@ -229,21 +229,21 @@ app.post("/cart/add", checkAuthenticated, async (req, res) => {
   }
 });
 
-app.post('/cart/update-qty', async (req, res) => {
-    const { cartID, amount } = req.body;
-    
-    console.log(`Updating Cart ID ${cartID} by ${amount}`);
+app.post("/cart/update-qty", async (req, res) => {
+  const { cartID, amount } = req.body;
 
-    try {
-        const sql = "UPDATE ShopCart SET quantity = quantity + ? WHERE cartID = ?";
-        
-        await pool.query(sql, [amount, cartID]);
+  console.log(`Updating Cart ID ${cartID} by ${amount}`);
 
-        res.redirect("/cart");
-    } catch (err) {
-        console.error("Database error:", err);
-        res.status(500).json({ success: false, error: "Database update failed" });
-    }
+  try {
+    const sql = "UPDATE ShopCart SET quantity = quantity + ? WHERE cartID = ?";
+
+    await pool.query(sql, [amount, cartID]);
+
+    res.redirect("/cart");
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ success: false, error: "Database update failed" });
+  }
 });
 
 app.post("/cart/apply-discount", checkAuthenticated, async (req, res) => {
@@ -269,12 +269,12 @@ app.post("/cart/apply-discount", checkAuthenticated, async (req, res) => {
       JOIN Inventory i ON sc.ProductID = i.ProductID
       WHERE sc.UserID = ?
       `,
-      [userId]
+      [userId],
     );
 
     const subtotal = cartItems.reduce(
       (sum, item) => sum + (Number(item.itemTotal) || 0),
-      0
+      0,
     );
 
     let discountAmount = 0;
@@ -289,7 +289,7 @@ app.post("/cart/apply-discount", checkAuthenticated, async (req, res) => {
         AND (expiresAt IS NULL OR expiresAt > NOW())
         AND (usageLimit IS NULL OR usageCount < usageLimit)
       `,
-      [discountCode]
+      [discountCode],
     );
 
     if (codes.length > 0) {
@@ -316,7 +316,7 @@ app.post("/cart/apply-discount", checkAuthenticated, async (req, res) => {
       discountAmount,
       tax,
       finalTotal: total,
-      discountMessage
+      discountMessage,
     });
   } catch (err) {
     console.error("Error applying discount:", err);
@@ -343,8 +343,16 @@ app.post("/cart/remove/:cartId", checkAuthenticated, async (req, res) => {
 
 app.get("/admin", checkAuthenticated, async (req, res) => {
   try {
-    // For now, just show a placeholder. In a real app, you'd check user.role === 'admin'
-    const [orders] = await pool.query(`
+    // Check if user is admin
+    if (req.user.role !== "admin") {
+      return res.render("admin.ejs", {
+        user: req.user,
+        message: "Access denied.",
+      });
+    }
+
+    const { statusFilter, sortBy, sortDir } = req.query;
+    let orderQuery = `
             SELECT 
                 o.orderID,
                 o.customerID,
@@ -352,25 +360,55 @@ app.get("/admin", checkAuthenticated, async (req, res) => {
                 u.lastName,
                 o.orderDate,
                 o.status,
-                o.total
+                o.orderTotal
             FROM Orders o
             LEFT JOIN Users u ON o.customerID = u.UserID
-            ORDER BY o.orderDate DESC
-            LIMIT 20
-        `);
+            WHERE 1=1
+        `;
+
+    // Apply status filter
+    if (statusFilter && statusFilter !== "all") {
+      orderQuery += ` AND o.status = '${statusFilter}'`;
+    }
+
+    // Apply sorting
+    let sortColumn = "o.orderDate";
+    if (sortBy === "customer") sortColumn = "u.firstName";
+    else if (sortBy === "total") sortColumn = "o.orderTotal";
+
+    const direction = sortDir === "ASC" ? "ASC" : "DESC";
+    orderQuery += ` ORDER BY ${sortColumn} ${direction} LIMIT 20`;
+
+    const [orders] = await pool.query(orderQuery);
+
+    // Fetch discount codes
+    const [discounts] = await pool.query(`
+      SELECT * FROM DiscountCodes ORDER BY createdAt DESC
+    `);
+
+    // Fetch users
+    const [users] = await pool.query(`
+      SELECT UserID, firstName, lastName, email, role FROM Users ORDER BY firstName
+    `);
 
     res.render("admin.ejs", {
       name: req.user.firstName,
       user: req.user,
       orders,
+      discounts: discounts || [],
+      users: users || [],
+      query: req.query,
     });
   } catch (err) {
     console.error("Error fetching admin data:", err);
     res.render("admin.ejs", {
-      name: req.user.name,
+      name: req.user.firstName,
       user: req.user,
       orders: [],
-      error: "Unable to load orders",
+      discounts: [],
+      users: [],
+      query: {},
+      error: "Unable to load admin data",
     });
   }
 });
@@ -422,6 +460,100 @@ app.delete("/logout", (req, res) => {
   });
 });
 
+// Create discount code
+app.post("/admin/discounts", checkAuthenticated, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.redirect("/admin");
+    }
+
+    const { code, discountType, discountValue, usageLimit, expiresAt } =
+      req.body;
+
+    await pool.query(
+      `INSERT INTO DiscountCodes (code, discountType, discountValue, usageLimit, expiresAt, isActive, usageCount, createdAt)
+       VALUES (?, ?, ?, ?, ?, 1, 0, NOW())`,
+      [
+        code,
+        discountType,
+        discountValue,
+        usageLimit || null,
+        expiresAt || null,
+      ],
+    );
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Error creating discount code:", err);
+    res.redirect("/admin");
+  }
+});
+
+// Delete discount code
+app.delete(
+  "/admin/discounts/:discountId",
+  checkAuthenticated,
+  async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.redirect("/admin");
+      }
+
+      const { discountId } = req.params;
+
+      await pool.query("DELETE FROM DiscountCodes WHERE discountID = ?", [
+        discountId,
+      ]);
+
+      res.redirect("/admin");
+    } catch (err) {
+      console.error("Error deleting discount code:", err);
+      res.redirect("/admin");
+    }
+  },
+);
+
+// Update user role
+app.post("/admin/users/:userId/role", checkAuthenticated, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.redirect("/admin");
+    }
+
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    await pool.query("UPDATE Users SET role = ? WHERE UserID = ?", [
+      role,
+      userId,
+    ]);
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Error updating user role:", err);
+    res.redirect("/admin");
+  }
+});
+
+// Delete user
+app.delete("/admin/users/:userId", checkAuthenticated, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.redirect("/admin");
+    }
+
+    const { userId } = req.params;
+
+    await pool.query("DELETE FROM Users WHERE UserID = ?", [userId]);
+    // Also delete their related data (cart, orders, etc.) if needed
+
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    res.redirect("/admin");
+  }
+});
+
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
@@ -458,12 +590,12 @@ app.get("/checkout", checkAuthenticated, async (req, res) => {
       JOIN Inventory i ON sc.ProductID = i.ProductID
       WHERE sc.UserID = ?
       `,
-      [userId]
+      [userId],
     );
 
     const subtotal = cartItems.reduce(
       (sum, item) => sum + (Number(item.itemTotal) || 0),
-      0
+      0,
     );
     const tax = subtotal * 0.0825;
     const total = subtotal + tax;
@@ -474,7 +606,7 @@ app.get("/checkout", checkAuthenticated, async (req, res) => {
       cartItems,
       subtotal,
       tax,
-      total
+      total,
     });
   } catch (err) {
     console.error("Error loading checkout:", err);
@@ -490,13 +622,13 @@ app.post("/checkout/place-order", checkAuthenticated, async (req, res) => {
     await pool.query("SET @p_orderID = 0");
     await pool.query("SET @p_message = ''");
 
-    await pool.query(
-      "CALL sp_PlaceOrder(?, ?, @p_orderID, @p_message)",
-      [userId, discountCode]
-    );
+    await pool.query("CALL sp_PlaceOrder(?, ?, @p_orderID, @p_message)", [
+      userId,
+      discountCode,
+    ]);
 
     const [result] = await pool.query(
-      "SELECT @p_orderID AS orderID, @p_message AS message"
+      "SELECT @p_orderID AS orderID, @p_message AS message",
     );
 
     const orderID = result[0].orderID;
@@ -507,7 +639,6 @@ app.post("/checkout/place-order", checkAuthenticated, async (req, res) => {
     }
 
     res.redirect(`/thank-you?orderID=${orderID}`);
-
   } catch (err) {
     console.error("Error placing order:", err);
     res.redirect("/checkout");
@@ -520,9 +651,8 @@ app.get("/thank-you", checkAuthenticated, (req, res) => {
   res.render("thank-you.ejs", {
     name: req.user.firstName,
     user: req.user,
-    orderID
+    orderID,
   });
 });
 
 app.listen(3000);
-

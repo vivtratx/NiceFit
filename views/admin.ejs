@@ -1,25 +1,158 @@
 <%- include('header') %>
-<h2>Admin</h2>
-<% if (orders.length === 0) { %>
-  <p>No orders.</p>
+
+<% if (user && user.role === 'admin') { %>
+  <h2>Admin</h2>
+
+ <!-- Orders Table -->
+<h3>Orders</h3>
+  <!-- Filters & Sorting -->
+  <form method="GET" action="/admin">
+    <label>Status:
+      <select name="statusFilter">
+        <option value="all"        <%= (!query.statusFilter || query.statusFilter === 'all')        ? 'selected' : '' %>>All</option>
+        <option value="placed"     <%= query.statusFilter === 'placed'       ? 'selected' : '' %>>Placed</option>
+        <option value="processing" <%= query.statusFilter === 'processing'   ? 'selected' : '' %>>Processing</option>
+        <option value="shipped"    <%= query.statusFilter === 'shipped'      ? 'selected' : '' %>>Shipped</option>
+        <option value="delivered"  <%= query.statusFilter === 'delivered'    ? 'selected' : '' %>>Delivered</option>
+        <option value="cancelled"  <%= query.statusFilter === 'cancelled'    ? 'selected' : '' %>>Cancelled</option>
+      </select>
+    </label>
+
+    <label>Sort by:
+      <select name="sortBy">
+        <option value="date"     <%= (!query.sortBy || query.sortBy === 'date')     ? 'selected' : '' %>>Date</option>
+        <option value="customer" <%= query.sortBy === 'customer' ? 'selected' : '' %>>Customer</option>
+        <option value="total"    <%= query.sortBy === 'total'    ? 'selected' : '' %>>Total</option>
+      </select>
+    </label>
+
+    <label>Direction:
+      <select name="sortDir">
+        <option value="DESC" <%= (!query.sortDir || query.sortDir === 'DESC') ? 'selected' : '' %>>Descending</option>
+        <option value="ASC"  <%= query.sortDir === 'ASC' ? 'selected' : '' %>>Ascending</option>
+      </select>
+    </label>
+
+    <button type="submit">Apply</button>
+    <a href="/admin">Reset</a>
+  </form>
+
+  <% if (orders.length === 0) { %>
+    <p>No orders found.</p>
+  <% } else { %>
+    <table>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Total</th>
+      </tr>
+      <% orders.forEach(o => { %>
+      <tr>
+        <td>#<%= o.orderID %></td>
+        <td><%= o.firstName %> <%= o.lastName %></td>
+        <td><%= new Date(o.orderDate).toLocaleDateString() %></td>
+        <td><%= o.status %></td>
+        <td>$<%= Number(o.orderTotal).toFixed(2) %></td>
+      </tr>
+      <% }) %>
+    </table>
+  <% } %>
+
+  <!-- Discount Codes -->
+  <h3>Discount Codes</h3>
+
+  <form action="/admin/discounts" method="POST">
+    <input type="text"   name="code"          placeholder="Code (e.g. SAVE10)" required />
+    <select name="discountType">
+      <option value="percent">Percent</option>
+      <option value="flat">Flat</option>
+    </select>
+    <input type="number" name="discountValue"  placeholder="Value" step="0.01" required />
+    <input type="number" name="usageLimit"     placeholder="Usage limit (optional)" />
+    <input type="date"   name="expiresAt"      placeholder="Expiry (optional)" />
+    <button type="submit">Create Code</button>
+  </form>
+
+  <% if (discounts.length === 0) { %>
+    <p>No discount codes.</p>
+  <% } else { %>
+    <table>
+      <tr>
+        <th>Code</th>
+        <th>Type</th>
+        <th>Value</th>
+        <th>Usage</th>
+        <th>Expires</th>
+        <th>Active</th>
+        <th>Action</th>
+      </tr>
+      <% discounts.forEach(d => { %>
+      <tr>
+        <td><%= d.code %></td>
+        <td><%= d.discountType %></td>
+        <td><%= d.discountType === 'percent' ? d.discountValue + '%' : '$' + d.discountValue %></td>
+        <td><%= d.usageCount %><%= d.usageLimit ? ' / ' + d.usageLimit : '' %></td>
+        <td><%= d.expiresAt ? new Date(d.expiresAt).toLocaleDateString() : 'Never' %></td>
+        <td><%= d.isActive ? 'Yes' : 'No' %></td>
+        <td>
+          <form action="/admin/discounts/<%= d.discountID %>?_method=DELETE" method="POST">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </table>
+  <% } %>
+
+  <!-- Users -->
+  <h3>Users</h3>
+  <% if (users.length === 0) { %>
+    <p>No users found.</p>
+  <% } else { %>
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Change Role</th>
+        <th>Delete</th>
+      </tr>
+      <% users.forEach(u => { %>
+      <tr>
+        <td><%= u.UserID %></td>
+        <td><%= u.firstName %> <%= u.lastName %></td>
+        <td><%= u.email %></td>
+        <td><%= u.role %></td>
+        <td>
+          <% if (u.UserID !== user.UserID) { %>
+            <form action="/admin/users/<%= u.UserID %>/role" method="POST">
+              <select name="role">
+                <option value="customer" <%= u.role === 'customer' ? 'selected' : '' %>>Customer</option>
+                <option value="admin"    <%= u.role === 'admin'    ? 'selected' : '' %>>Admin</option>
+              </select>
+              <button type="submit">Update</button>
+            </form>
+          <% } else { %>
+            <em>(you)</em>
+          <% } %>
+        </td>
+        <td>
+          <% if (u.UserID !== user.UserID) { %>
+            <form action="/admin/users/<%= u.UserID %>?_method=DELETE" method="POST">
+              <button type="submit">Delete</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </table>
+  <% } %>
+
 <% } else { %>
-  <table>
-    <tr>
-      <th>Order ID</th>
-      <th>Customer</th>
-      <th>Date</th>
-      <th>Status</th>
-      <th>Total</th>
-    </tr>
-    <% orders.forEach(o => { %>
-    <tr>
-      <td>#<%= o.orderID %></td>
-      <td><%= o.firstName %> <%= o.lastName %></td>
-      <td><%= new Date(o.orderDate).toLocaleDateString() %></td>
-      <td><%= o.status %></td>
-      <td>$<%= o.total %></td>
-    </tr>
-    <% }) %>
-  </table>
+  <p>Access denied.</p>
 <% } %>
+
 <%- include('footer') %>
