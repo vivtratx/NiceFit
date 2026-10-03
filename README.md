@@ -3,7 +3,8 @@
 NiceFit is a team-based software engineering project developed as a clothing shop management web application.
 
 The project integrates server-side application logic, EJS views, product data, images, user authentication, and a MySQL database.
-
+This was a team academic project. The repository represents contributions from multiple team members.
+My personal work primarily focused on code integration, debugging, data validation, and ensuring application logic worked correctly with the EJS views. - huy pham
 ## Technologies Used
 
 - Node.js
